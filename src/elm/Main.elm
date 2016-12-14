@@ -1,11 +1,12 @@
 module Main exposing (..)
 
+import Home as H
 import Geospatial as G
 import KeyMetrics as K
 import Issues as I
 import Html as H
 import Material
-import Material.Layout as Layout
+import Material.Layout as L
 import Navigation
 import UrlParser exposing (Parser, top, s, oneOf, map, parsePath)
 
@@ -33,6 +34,7 @@ type Page
 type alias Model =
     { history : List (Maybe Page)
     , mdl : Material.Model
+    , home : H.Model
     , geospatial : G.Model
     , keyMetrics : K.Model
     , issues : I.Model
@@ -40,7 +42,8 @@ type alias Model =
 
 
 type Msg
-    = UrlChange Navigation.Location
+    = NewUrl String
+    | UrlChange Navigation.Location
     | Mdl (Material.Msg Msg)
 
 
@@ -48,11 +51,12 @@ init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
     { history = [ parsePath route location ]
     , mdl = Material.model
+    , home = H.init
     , geospatial = G.init
     , keyMetrics = K.init
     , issues = I.init
     }
-        ! [ Layout.sub0 Mdl ]
+        ! [ L.sub0 Mdl ]
 
 
 route : Parser (Page -> a) a
@@ -65,16 +69,35 @@ route =
         ]
 
 
+pageToString : Page -> String
+pageToString p =
+    case p of
+        Home ->
+            ""
+
+        Geospatial ->
+            "geospatial"
+
+        KeyMetrics ->
+            "keymetrics"
+
+        Issues ->
+            "issues"
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Layout.subs Mdl model.mdl
+        [ L.subs Mdl model.mdl
         ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NewUrl url ->
+            ( model, Navigation.newUrl url )
+
         UrlChange navLocation ->
             { model | history = parsePath route navLocation :: model.history }
                 ! []
