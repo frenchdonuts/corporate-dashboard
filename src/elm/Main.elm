@@ -4,9 +4,10 @@ import Home as H
 import Geospatial as G
 import KeyMetrics as K
 import Issues as I
-import Html as H
+import Html as H exposing (Html)
 import Material
 import Material.Layout as L
+import Material.Options as O
 import Navigation
 import UrlParser exposing (Parser, top, s, oneOf, map, parsePath)
 
@@ -45,6 +46,10 @@ type Msg
     = NewUrl String
     | UrlChange Navigation.Location
     | Mdl (Material.Msg Msg)
+    | HomeMsg H.Msg
+    | GeospatialMsg G.Msg
+    | KeyMetricsMsg K.Msg
+    | IssuesMsg I.Msg
 
 
 init : Navigation.Location -> ( Model, Cmd Msg )
@@ -95,6 +100,18 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        HomeMsg msg ->
+            { model | home = H.update msg model.home } ! []
+
+        GeospatialMsg msg ->
+            { model | geospatial = G.update msg model.geospatial } ! []
+
+        KeyMetricsMsg msg ->
+            { model | keyMetrics = K.update msg model.keyMetrics } ! []
+
+        IssuesMsg msg ->
+            { model | issues = I.update msg model.issues } ! []
+
         NewUrl url ->
             ( model, Navigation.newUrl url )
 
@@ -106,10 +123,10 @@ update msg model =
             Material.update msg model
 
 
-view : Model -> H.Html Msg
+view : Model -> Html Msg
 view model =
     let
-        { history, mdl, geospatial, keyMetrics, issues } =
+        { history, mdl, home, geospatial, keyMetrics, issues } =
             model
 
         currentPage =
@@ -119,5 +136,60 @@ view model =
 
                 [] ->
                     Home
+
+        mainView =
+            case currentPage of
+                Home ->
+                    H.map HomeMsg (H.view home)
+
+                Geospatial ->
+                    H.map GeospatialMsg (G.view geospatial)
+
+                KeyMetrics ->
+                    H.map KeyMetricsMsg (K.view keyMetrics)
+
+                Issues ->
+                    H.map IssuesMsg (I.view issues)
     in
-        H.div [] []
+        L.render Mdl
+            mdl
+            []
+            { header = header
+            , drawer = drawer
+            , tabs = ( [], [] )
+            , main = []
+            }
+
+
+header : List (Html Msg)
+header =
+    [ L.row
+        [ O.css "transition" "height 333ms ease-in-out 0s"
+        ]
+        [ L.title [] [ H.text "Massive Corp. Inc." ]
+        , L.spacer
+        , L.navigation []
+            [ L.link
+                [ L.href "https://github.com/debois/elm-mdl" ]
+                [ H.span [] [ H.text "github" ] ]
+            ]
+        ]
+    ]
+
+
+drawer : List (Html Msg)
+drawer =
+    [ L.title [] [ H.text "Dashboards" ]
+    , L.navigation
+        []
+        [ L.link
+            [ L.onClick (NewUrl "/geospatial") ]
+            [ H.text "Geospatial" ]
+        , L.link
+            [ L.onClick (NewUrl "/keymetrics") ]
+            [ H.text "Key Metrics" ]
+        , L.link
+            [ L.onClick (NewUrl "/issues") ]
+            [ H.text "Issues" ]
+        ]
+    ]
