@@ -1,0 +1,252 @@
+{
+    "Montgomery": {
+        "latitude": 32.361538,
+        "longitude": -86.279118,
+        "employeeCount": 16642
+    },
+    "Juneau": {
+        "latitude": 58.301935,
+        "longitude": -134.41974,
+        "employeeCount": 75842
+    },
+    "Phoenix": {
+        "latitude": 33.448457,
+        "longitude": -112.073844,
+        "employeeCount": 27535
+    },
+    "Little Rock": {
+        "latitude": 34.736009,
+        "longitude": -92.331122,
+        "employeeCount": 54799
+    },
+    "Sacramento": {
+        "latitude": 38.555605,
+        "longitude": -121.468926,
+        "employeeCount": 55888
+    },
+    "Denver": {
+        "latitude": 39.7391667,
+        "longitude": -104.984167,
+        "employeeCount": 74168
+    },
+    "Hartford": {
+        "latitude": 41.767,
+        "longitude": -72.677,
+        "employeeCount": 64352
+    },
+    "Dover": {
+        "latitude": 39.161921,
+        "longitude": -75.526755,
+        "employeeCount": 53669
+    },
+    "Tallahassee": {
+        "latitude": 30.4518,
+        "longitude": -84.27277,
+        "employeeCount": 94931
+    },
+    "Atlanta": {
+        "latitude": 33.76,
+        "longitude": -84.39,
+        "employeeCount": 99424
+    },
+    "Honolulu": {
+        "latitude": 21.30895,
+        "longitude": -157.826182,
+        "employeeCount": 38729
+    },
+    "Boise": {
+        "latitude": 43.613739,
+        "longitude": -116.237651,
+        "employeeCount": 96731
+    },
+    "Springfield": {
+        "latitude": 39.78325,
+        "longitude": -89.650373,
+        "employeeCount": 77816
+    },
+    "Indianapolis": {
+        "latitude": 39.790942,
+        "longitude": -86.147685,
+        "employeeCount": 60991
+    },
+    "Des Moines": {
+        "latitude": 41.590939,
+        "longitude": -93.620866,
+        "employeeCount": 73741
+    },
+    "Topeka": {
+        "latitude": 39.04,
+        "longitude": -95.69,
+        "employeeCount": 7528
+    },
+    "Frankfort": {
+        "latitude": 38.197274,
+        "longitude": -84.86311,
+        "employeeCount": 99164
+    },
+    "Baton Rouge": {
+        "latitude": 30.45809,
+        "longitude": -91.140229,
+        "employeeCount": 20314
+    },
+    "Augusta": {
+        "latitude": 44.323535,
+        "longitude": -69.765261,
+        "employeeCount": 88073
+    },
+    "Annapolis": {
+        "latitude": 38.972945,
+        "longitude": -76.501157,
+        "employeeCount": 12479
+    },
+    "Boston": {
+        "latitude": 42.2352,
+        "longitude": -71.0275,
+        "employeeCount": 46301
+    },
+    "Lansing": {
+        "latitude": 42.7335,
+        "longitude": -84.5467,
+        "employeeCount": 45906
+    },
+    "Saint Paul": {
+        "latitude": 44.95,
+        "longitude": -93.094,
+        "employeeCount": 77670
+    },
+    "Jackson": {
+        "latitude": 32.32,
+        "longitude": -90.207,
+        "employeeCount": 49206
+    },
+    "Jefferson City": {
+        "latitude": 38.572954,
+        "longitude": -92.189283,
+        "employeeCount": 47713
+    },
+    "Helana": {
+        "latitude": 46.595805,
+        "longitude": -112.027031,
+        "employeeCount": 89589
+    },
+    "Lincoln": {
+        "latitude": 40.809868,
+        "longitude": -96.675345,
+        "employeeCount": 80133
+    },
+    "Carson City": {
+        "latitude": 39.160949,
+        "longitude": -119.753877,
+        "employeeCount": 87229
+    },
+    "Concord": {
+        "latitude": 43.220093,
+        "longitude": -71.549127,
+        "employeeCount": 26991
+    },
+    "Trenton": {
+        "latitude": 40.221741,
+        "longitude": -74.756138,
+        "employeeCount": 22777
+    },
+    "Santa Fe": {
+        "latitude": 35.667231,
+        "longitude": -105.964575,
+        "employeeCount": 12892
+    },
+    "Albany": {
+        "latitude": 42.659829,
+        "longitude": -73.781339,
+        "employeeCount": 13784
+    },
+    "Raleigh": {
+        "latitude": 35.771,
+        "longitude": -78.638,
+        "employeeCount": 13278
+    },
+    "Bismarck": {
+        "latitude": 48.813343,
+        "longitude": -100.779004,
+        "employeeCount": 74906
+    },
+    "Columbus": {
+        "latitude": 39.962245,
+        "longitude": -83.000647,
+        "employeeCount": 23111
+    },
+    "Oklahoma City": {
+        "latitude": 35.482309,
+        "longitude": -97.534994,
+        "employeeCount": 22036
+    },
+    "Salem": {
+        "latitude": 44.931109,
+        "longitude": -123.029159,
+        "employeeCount": 3238
+    },
+    "Harrisburg": {
+        "latitude": 40.269789,
+        "longitude": -76.875613,
+        "employeeCount": 39664
+    },
+    "Providence": {
+        "latitude": 41.82355,
+        "longitude": -71.422132,
+        "employeeCount": 75171
+    },
+    "Columbia": {
+        "latitude": 34,
+        "longitude": -81.035,
+        "employeeCount": 52374
+    },
+    "Pierre": {
+        "latitude": 44.367966,
+        "longitude": -100.336378,
+        "employeeCount": 99972
+    },
+    "Nashville": {
+        "latitude": 36.165,
+        "longitude": -86.784,
+        "employeeCount": 42925
+    },
+    "Austin": {
+        "latitude": 30.266667,
+        "longitude": -97.75,
+        "employeeCount": 19041
+    },
+    "Salt Lake City": {
+        "latitude": 40.7547,
+        "longitude": -111.892622,
+        "employeeCount": 13854
+    },
+    "Montpelier": {
+        "latitude": 44.26639,
+        "longitude": -72.57194,
+        "employeeCount": 49068
+    },
+    "Richmond": {
+        "latitude": 37.54,
+        "longitude": -77.46,
+        "employeeCount": 9096
+    },
+    "Olympia": {
+        "latitude": 47.042418,
+        "longitude": -122.893077,
+        "employeeCount": 50395
+    },
+    "Charleston": {
+        "latitude": 38.349497,
+        "longitude": -81.633294,
+        "employeeCount": 82380
+    },
+    "Madison": {
+        "latitude": 43.074722,
+        "longitude": -89.384444,
+        "employeeCount": 54964
+    },
+    "Cheyenne": {
+        "latitude": 41.145548,
+        "longitude": -104.802042,
+        "employeeCount": 34553
+    }
+}
