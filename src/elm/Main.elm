@@ -157,7 +157,7 @@ view model =
             { header = header
             , drawer = drawer
             , tabs = ( [], [] )
-            , main = []
+            , main = [ mainView ]
             }
 
 
