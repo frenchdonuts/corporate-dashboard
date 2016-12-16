@@ -170,7 +170,7 @@ header =
         , L.spacer
         , L.navigation []
             [ L.link
-                [ L.href "https://github.com/debois/elm-mdl" ]
+                [ L.href "https://github.com/frenchdonuts/corporate-dashboard" ]
                 [ H.span [] [ H.text "github" ] ]
             ]
         ]
