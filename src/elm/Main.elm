@@ -54,14 +54,22 @@ type Msg
 
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
-    { history = [ parsePath route location ]
-    , mdl = Material.model
-    , home = H.init
-    , geospatial = G.init
-    , keyMetrics = K.init
-    , issues = I.init
-    }
-        ! [ L.sub0 Mdl ]
+    let
+        ( issuesInitModel, issuesInitCmd ) =
+            I.init
+    in
+        { history =
+            [ Just Issues ]
+            --parsePath route location ]
+        , mdl = Material.model
+        , home = H.init
+        , geospatial = G.init
+        , keyMetrics = K.init
+        , issues = issuesInitModel
+        }
+            ! [ L.sub0 Mdl
+              , Cmd.map IssuesMsg issuesInitCmd
+              ]
 
 
 route : Parser (Page -> a) a
