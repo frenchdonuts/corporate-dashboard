@@ -61,8 +61,11 @@ parseDateTime =
     let
         epoch =
             T.fromTimestamp 0
+
+        toDateTime =
+            Result.withDefault epoch << Result.map T.fromTimestamp << String.toFloat
     in
-        (Result.withDefault epoch << T.fromISO8601) <$> C.while ((/=) ',') <* (C.string ",")
+        toDateTime <$> C.while ((/=) ',') <* (C.string ",")
 
 
 parseString : C.Parser s String
