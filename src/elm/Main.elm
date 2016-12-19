@@ -161,7 +161,7 @@ view model =
     in
         L.render Mdl
             mdl
-            []
+            [ L.fixedDrawer ]
             { header = header
             , drawer = drawer
             , tabs = ( [], [] )
