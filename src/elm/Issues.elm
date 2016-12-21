@@ -3,7 +3,8 @@ module Issues exposing (..)
 import CSVParser exposing (..)
 import Combine exposing ((<$>), (<*>))
 import Time.DateTime as T
-import Html as H exposing (Html)
+import Html as H exposing (Html, text)
+import Material.Table as Table
 import Http
 
 
@@ -77,13 +78,58 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    H.div [] [ H.text <| toString model ]
+    Table.table []
+        [ Table.thead [] header
+        , Table.tbody []
+            (List.map issueRow model)
+        ]
 
 
-issueView : Issue -> Html Msg
-issueView issue =
+header : List (Html Msg)
+header =
+    let
+        customerName =
+            Table.th [] [ text "Customer Name" ]
+
+        employeeName =
+            Table.th [] [ text "Employee Name" ]
+
+        description =
+            Table.th [] [ text "Description" ]
+
+        open =
+            Table.th [] [ text "Open/Closed" ]
+
+        customerEmailAddress =
+            Table.th [] [ text "Customer Email" ]
+
+        submissionTimestamp =
+            Table.th [ Table.numeric ] [ text "Submission Timestamp" ]
+
+        closedTimestamp =
+            Table.th [ Table.numeric ] [ text "Closed Timestamp" ]
+    in
+        [ customerName
+        , employeeName
+        , description
+        , open
+        , customerEmailAddress
+        , submissionTimestamp
+        , closedTimestamp
+        ]
+
+
+issueRow : Issue -> Html Msg
+issueRow issue =
     let
         { submissionTimestamp, customerName, customerEmailAddress, description, open, closedTimestamp, employeeName } =
             issue
     in
-        H.div [] []
+        Table.tr []
+            [ Table.td [] [ text customerName ]
+            , Table.td [] [ text employeeName ]
+            , Table.td [] [ text description ]
+            , Table.td [] [ text (toString open) ]
+            , Table.td [] [ text (T.toISO8601 submissionTimestamp) ]
+            , Table.td [] [ text (T.toISO8601 closedTimestamp) ]
+            ]
