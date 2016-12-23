@@ -9,7 +9,7 @@ import Http
 
 
 type alias Model =
-    List Issue
+    ( List Issue, SortKey, SortOrder )
 
 
 type alias Issue =
@@ -21,6 +21,85 @@ type alias Issue =
     , closedTimestamp : T.DateTime
     , employeeName : String
     }
+
+
+type SortOrder
+    = ASC
+    | DSC
+
+
+cycle : SortOrder -> SortOrder
+cycle order =
+    case order of
+        ASC ->
+            DSC
+
+        DSC ->
+            ASC
+
+
+type SortKey
+    = SubmissionTimestamp
+    | CustomerName
+    | CustomerEmail
+    | Description
+    | Open
+    | ClosedTimestamp
+    | EmployeeName
+
+
+sorter : SortKey -> SortOrder -> (Issue -> Issue -> Order)
+sorter sortKey sortOrder =
+    let
+        comparisonFn compare =
+            if sortOrder == ASC then
+                compare
+            else
+                reverseComparison compare
+
+        reverseComparison compare a b =
+            case compare a b of
+                LT ->
+                    GT
+
+                EQ ->
+                    EQ
+
+                GT ->
+                    LT
+
+        compareBool b1 b2 =
+            case ( b1, b2 ) of
+                ( True, False ) ->
+                    GT
+
+                ( False, True ) ->
+                    LT
+
+                _ ->
+                    EQ
+    in
+        case sortKey of
+            SubmissionTimestamp ->
+                comparisonFn (\i1 i2 -> T.compare i1.submissionTimestamp i2.submissionTimestamp)
+
+            CustomerName ->
+                comparisonFn (\i1 i2 -> compare i1.customerName i2.customerName)
+
+            CustomerEmail ->
+                comparisonFn (\i1 i2 -> compare i1.customerEmailAddress i2.customerEmailAddress)
+
+            Description ->
+                comparisonFn (\i1 i2 -> compare i1.description i2.description)
+
+            Open ->
+                comparisonFn (\i1 i2 -> compareBool i1.open i2.open)
+
+            ClosedTimestamp ->
+                comparisonFn (\i1 i2 -> T.compare i1.closedTimestamp i2.closedTimestamp)
+
+            EmployeeName ->
+                comparisonFn (\i1 i2 -> compare i1.employeeName i2.employeeName)
 
 
 getIssuesCSVCmd : Cmd Msg
@@ -48,75 +127,115 @@ parseIssue =
 
 type Msg
     = Issues (Result Http.Error String)
+    | Reorder SortKey
     | NoOp
 
 
 init : ( Model, Cmd Msg )
 init =
-    [] ! [ getIssuesCSVCmd ]
+    ( [], SubmissionTimestamp, DSC ) ! [ getIssuesCSVCmd ]
 
 
 update : Msg -> Model -> Model
 update msg model =
-    case msg of
-        Issues httpResult ->
-            case httpResult of
-                Ok csv ->
-                    case Combine.parse parseIssues csv of
-                        Ok ( _, _, issues ) ->
-                            issues
-
-                        Err err ->
-                            Debug.log ("CSV parser error: " ++ (toString err)) []
-
-                Err err ->
-                    []
-
-        NoOp ->
+    let
+        ( issues, sortKey, sortOrder ) =
             model
+    in
+        case msg of
+            Issues httpResult ->
+                case httpResult of
+                    Ok csv ->
+                        case Combine.parse parseIssues csv of
+                            Ok ( _, _, issues ) ->
+                                ( issues, sortKey, sortOrder )
+
+                            Err err ->
+                                Debug.log ("CSV parser error: " ++ (toString err)) ( [], SubmissionTimestamp, sortOrder )
+
+                    Err err ->
+                        ( [], SubmissionTimestamp, sortOrder )
+
+            Reorder newSortKey ->
+                if newSortKey == sortKey then
+                    ( issues, newSortKey, cycle sortOrder )
+                else
+                    ( issues, newSortKey, ASC )
+
+            NoOp ->
+                model
 
 
 view : Model -> Html Msg
 view model =
-    Table.table []
-        [ Table.thead [] header
-        , Table.tbody []
-            (List.map issueRow model)
-        ]
-
-
-header : List (Html Msg)
-header =
     let
-        customerName =
-            Table.th [] [ text "Customer Name" ]
+        ( issues, sortKey, sortOrder ) =
+            model
 
-        employeeName =
-            Table.th [] [ text "Employee Name" ]
-
-        description =
-            Table.th [] [ text "Description" ]
-
-        open =
-            Table.th [] [ text "Open/Closed" ]
-
-        customerEmailAddress =
-            Table.th [] [ text "Customer Email" ]
-
-        submissionTimestamp =
-            Table.th [ Table.numeric ] [ text "Submission Timestamp" ]
-
-        closedTimestamp =
-            Table.th [ Table.numeric ] [ text "Closed Timestamp" ]
+        sortedIssues =
+            List.sortWith (sorter sortKey sortOrder) issues
     in
-        [ customerName
-        , employeeName
-        , description
-        , open
-        , customerEmailAddress
-        , submissionTimestamp
-        , closedTimestamp
-        ]
+        Table.table []
+            [ Table.thead [] (header model)
+            , Table.tbody []
+                (List.map issueRow sortedIssues)
+            ]
+
+
+header : Model -> List (Html Msg)
+header model =
+    let
+        columns =
+            [ CustomerName
+            , EmployeeName
+            , Description
+            , Open
+            , CustomerEmail
+            , SubmissionTimestamp
+            , ClosedTimestamp
+            ]
+    in
+        List.map (headerColumn model) columns
+
+
+headerColumn : Model -> SortKey -> Html Msg
+headerColumn ( issues, currentSortKey, order ) sortKey =
+    let
+        attrs =
+            if currentSortKey == sortKey then
+                case order of
+                    ASC ->
+                        [ Table.ascending, Table.onClick (Reorder sortKey) ]
+
+                    DSC ->
+                        [ Table.descending, Table.onClick (Reorder sortKey) ]
+            else
+                [ Table.onClick (Reorder sortKey) ]
+
+        columnName sortKey =
+            case sortKey of
+                SubmissionTimestamp ->
+                    "Submission Timestamp"
+
+                CustomerName ->
+                    "Customer Name"
+
+                CustomerEmail ->
+                    "Customer Email"
+
+                Description ->
+                    "Description"
+
+                Open ->
+                    "Open/Closed"
+
+                ClosedTimestamp ->
+                    "Closed Timestamp"
+
+                EmployeeName ->
+                    "Employee Name"
+    in
+        Table.th attrs [ text (columnName sortKey) ]
 
 
 issueRow : Issue -> Html Msg
