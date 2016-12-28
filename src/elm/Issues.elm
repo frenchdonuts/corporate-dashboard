@@ -5,11 +5,12 @@ import Combine exposing ((<$>), (<*>))
 import Time.DateTime as T
 import Html as H exposing (Html, text)
 import Material.Table as Table
+import Material.Grid as Grid
 import Http
 
 
 type alias Model =
-    ( List Issue, SortKey, SortOrder )
+    ( List Issue, Key, SortOrder )
 
 
 type alias Issue =
@@ -38,7 +39,7 @@ cycle order =
             ASC
 
 
-type SortKey
+type Key
     = SubmissionTimestamp
     | CustomerName
     | CustomerEmail
@@ -48,7 +49,7 @@ type SortKey
     | EmployeeName
 
 
-sorter : SortKey -> SortOrder -> (Issue -> Issue -> Order)
+sorter : Key -> SortOrder -> (Issue -> Issue -> Order)
 sorter sortKey sortOrder =
     let
         comparisonFn compare =
@@ -127,7 +128,7 @@ parseIssue =
 
 type Msg
     = Issues (Result Http.Error String)
-    | Reorder SortKey
+    | Reorder Key
     | NoOp
 
 
@@ -156,11 +157,11 @@ update msg model =
                     Err err ->
                         ( [], SubmissionTimestamp, sortOrder )
 
-            Reorder newSortKey ->
-                if newSortKey == sortKey then
-                    ( issues, newSortKey, cycle sortOrder )
+            Reorder newKey ->
+                if newKey == sortKey then
+                    ( issues, newKey, cycle sortOrder )
                 else
-                    ( issues, newSortKey, ASC )
+                    ( issues, newKey, ASC )
 
             NoOp ->
                 model
@@ -174,17 +175,7 @@ view model =
 
         sortedIssues =
             List.sortWith (sorter sortKey sortOrder) issues
-    in
-        Table.table []
-            [ Table.thead [] (header model)
-            , Table.tbody []
-                (List.map issueRow sortedIssues)
-            ]
 
-
-header : Model -> List (Html Msg)
-header model =
-    let
         columns =
             [ CustomerName
             , EmployeeName
@@ -195,14 +186,22 @@ header model =
             , ClosedTimestamp
             ]
     in
-        List.map (headerColumn model) columns
+        Grid.grid [ Grid.size Grid.Desktop 12 ]
+            [ Grid.cell []
+                [ Table.table []
+                    [ Table.thead [] (List.map (headerColumn model) columns)
+                    , Table.tbody []
+                        (List.map (issueRow columns) sortedIssues)
+                    ]
+                ]
+            ]
 
 
-headerColumn : Model -> SortKey -> Html Msg
-headerColumn ( issues, currentSortKey, order ) sortKey =
+headerColumn : Model -> Key -> Html Msg
+headerColumn ( issues, currentKey, order ) sortKey =
     let
         attrs =
-            if currentSortKey == sortKey then
+            if currentKey == sortKey then
                 case order of
                     ASC ->
                         [ Table.ascending, Table.onClick (Reorder sortKey) ]
@@ -238,17 +237,61 @@ headerColumn ( issues, currentSortKey, order ) sortKey =
         Table.th attrs [ text (columnName sortKey) ]
 
 
-issueRow : Issue -> Html Msg
-issueRow issue =
+dateTimeToString : T.DateTime -> String
+dateTimeToString dateTime =
+    let
+        month =
+            toString <| T.month dateTime
+
+        day =
+            toString <| T.day dateTime
+
+        year =
+            toString <| T.year dateTime
+    in
+        month ++ "/" ++ day ++ "/" ++ year
+
+
+issueRow : List Key -> Issue -> Html Msg
+issueRow columns issue =
     let
         { submissionTimestamp, customerName, customerEmailAddress, description, open, closedTimestamp, employeeName } =
             issue
+
+        ellipsize string =
+            let
+                truncatedString =
+                    String.left 30 string
+            in
+                if String.length string > 30 then
+                    truncatedString ++ "..."
+                else
+                    truncatedString
+
+        toTd string =
+            Table.td [] [ text <| ellipsize string ]
+
+        columnData key =
+            case key of
+                SubmissionTimestamp ->
+                    toTd (dateTimeToString submissionTimestamp)
+
+                CustomerName ->
+                    toTd customerName
+
+                CustomerEmail ->
+                    toTd employeeName
+
+                Description ->
+                    toTd description
+
+                Open ->
+                    toTd (toString open)
+
+                ClosedTimestamp ->
+                    toTd (dateTimeToString closedTimestamp)
+
+                EmployeeName ->
+                    toTd employeeName
     in
-        Table.tr []
-            [ Table.td [] [ text customerName ]
-            , Table.td [] [ text employeeName ]
-            , Table.td [] [ text description ]
-            , Table.td [] [ text (toString open) ]
-            , Table.td [] [ text (T.toISO8601 submissionTimestamp) ]
-            , Table.td [] [ text (T.toISO8601 closedTimestamp) ]
-            ]
+        Table.tr [] (List.map columnData columns)
