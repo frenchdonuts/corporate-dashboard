@@ -1,0 +1,21 @@
+{
+  "name": "Massive Corp. Inc.",
+  "description": "Udacity Sr. Web Developer Nanodegree Project 4",
+  "main": "",
+  "authors": [
+    "frenchdonuts"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/frenchdonuts/corporate-dashboard",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "google-map": "GoogleWebComponents/google-map#^1.1.14"
+  }
+}
