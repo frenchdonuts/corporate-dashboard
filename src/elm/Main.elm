@@ -59,7 +59,7 @@ init location =
             I.init
     in
         { history =
-            [ Just Issues ]
+            [ Just Geospatial ]
             --parsePath route location ]
         , mdl = Material.model
         , home = H.init

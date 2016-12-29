@@ -1,7 +1,8 @@
 module Geospatial exposing (..)
 
 import Dict as D
-import Html as H exposing (Html)
+import Html as H exposing (Html, node)
+import Material.Grid as G
 
 
 type alias Model =
@@ -33,4 +34,5 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    H.div [] []
+    H.div []
+        [ node "google-map" [] [] ]
