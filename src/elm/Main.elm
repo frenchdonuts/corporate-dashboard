@@ -55,6 +55,9 @@ type Msg
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
     let
+        ( geospatialInitModel, geospatialInitCmd ) =
+            G.init
+
         ( issuesInitModel, issuesInitCmd ) =
             I.init
     in
@@ -63,11 +66,12 @@ init location =
             --parsePath route location ]
         , mdl = Material.model
         , home = H.init
-        , geospatial = G.init
+        , geospatial = geospatialInitModel
         , keyMetrics = K.init
         , issues = issuesInitModel
         }
             ! [ L.sub0 Mdl
+              , Cmd.map GeospatialMsg geospatialInitCmd
               , Cmd.map IssuesMsg issuesInitCmd
               ]
 
