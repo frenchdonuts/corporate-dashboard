@@ -1,3 +1,15 @@
+Questions while going through elm-sortable-table example
+  How does viewCheckbox get its state? It excepts a record w/ a "selected" field
+Geospatial page
+  Row should be "highlighted" on hover
+    How will I get rid of the gap in the highlighting?
+  How do I make it look more like a sortable table?
+  Should I use elm-sortable table now?
+
+  Should be sortable by City(alphabetically) and Employee Count
+  When User clicks on a row, zoom in on corresponding City in Google Maps
+    When User clicks again, go back to default zoom (zoom lv to fit US)
+
 Call the "company":
   Massive Corp Inc.
   Over-Employed Corp Inc.
