@@ -6,6 +6,7 @@ import Time.DateTime as T
 import Html as H exposing (Html, text)
 import Material.Table as Table
 import Material.Grid as Grid
+import Material.Options as O
 import Http
 
 
@@ -186,14 +187,13 @@ view model =
             , ClosedTimestamp
             ]
     in
-        Grid.grid [ Grid.size Grid.Desktop 12 ]
-            [ Grid.cell []
-                [ Table.table []
-                    [ Table.thead [] (List.map (headerColumn model) columns)
-                    , Table.tbody []
-                        (List.map (issueRow columns) sortedIssues)
-                    ]
-                ]
+        Table.table
+            [ O.css "display" "block"
+            , O.css "overflow-x" "scroll"
+            ]
+            [ Table.thead [] (List.map (headerColumn model) columns)
+            , Table.tbody []
+                (List.map (issueRow columns) sortedIssues)
             ]
 
 
@@ -258,18 +258,8 @@ issueRow columns issue =
         { submissionTimestamp, customerName, customerEmailAddress, description, open, closedTimestamp, employeeName } =
             issue
 
-        ellipsize string =
-            let
-                truncatedString =
-                    String.left 30 string
-            in
-                if String.length string > 30 then
-                    truncatedString ++ "..."
-                else
-                    truncatedString
-
         toTd string =
-            Table.td [] [ text <| ellipsize string ]
+            Table.td [] [ text <| string ]
 
         columnData key =
             case key of
