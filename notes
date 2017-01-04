@@ -1,5 +1,8 @@
-Questions while going through elm-sortable-table example
-  How does viewCheckbox get its state? It excepts a record w/ a "selected" field
+TODO
+  Geospatial
+    Style arrows so they are smaller
+
+
 Geospatial page
   Row should be "highlighted" on hover
     How will I get rid of the gap in the highlighting?
