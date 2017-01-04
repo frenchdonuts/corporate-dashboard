@@ -11,7 +11,12 @@ import Http
 
 
 type alias Model =
-    ( List Issue, Key, SortOrder )
+    { issues : List Issue
+    , sortKey : Key
+    , sortOrder : SortOrder
+    , filterKey : Key
+    , filterString : String
+    }
 
 
 type alias Issue =
@@ -135,13 +140,19 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( [], SubmissionTimestamp, DSC ) ! [ getIssuesCSVCmd ]
+    { issues = []
+    , sortKey = SubmissionTimestamp
+    , sortOrder = DSC
+    , filterKey = CustomerName
+    , filterString = ""
+    }
+        ! [ getIssuesCSVCmd ]
 
 
 update : Msg -> Model -> Model
 update msg model =
     let
-        ( issues, sortKey, sortOrder ) =
+        { issues, sortKey, sortOrder, filterKey, filterString } =
             model
     in
         case msg of
@@ -150,19 +161,19 @@ update msg model =
                     Ok csv ->
                         case Combine.parse parseIssues csv of
                             Ok ( _, _, issues ) ->
-                                ( issues, sortKey, sortOrder )
+                                { model | issues = issues }
 
                             Err err ->
-                                Debug.log ("CSV parser error: " ++ (toString err)) ( [], SubmissionTimestamp, sortOrder )
+                                Debug.log ("CSV parser error: " ++ (toString err)) model
 
                     Err err ->
-                        ( [], SubmissionTimestamp, sortOrder )
+                        model
 
             Reorder newKey ->
                 if newKey == sortKey then
-                    ( issues, newKey, cycle sortOrder )
+                    { model | sortOrder = cycle sortOrder }
                 else
-                    ( issues, newKey, ASC )
+                    { model | sortOrder = ASC }
 
             NoOp ->
                 model
@@ -171,11 +182,39 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        ( issues, sortKey, sortOrder ) =
+        { issues, sortKey, sortOrder, filterKey, filterString } =
             model
 
-        sortedIssues =
-            List.sortWith (sorter sortKey sortOrder) issues
+        containsFilterString =
+            String.contains filterString
+
+        filter issue =
+            case filterKey of
+                SubmissionTimestamp ->
+                    containsFilterString <| T.toISO8601 issue.submissionTimestamp
+
+                CustomerName ->
+                    containsFilterString issue.customerName
+
+                CustomerEmail ->
+                    containsFilterString issue.customerEmailAddress
+
+                Description ->
+                    containsFilterString issue.description
+
+                Open ->
+                    containsFilterString <| toString issue.open
+
+                ClosedTimestamp ->
+                    containsFilterString <| T.toISO8601 issue.closedTimestamp
+
+                EmployeeName ->
+                    containsFilterString issue.employeeName
+
+        filteredAndSortedIssues =
+            issues
+                |> List.filter filter
+                |> List.sortWith (sorter sortKey sortOrder)
 
         columns =
             [ CustomerName
@@ -193,26 +232,26 @@ view model =
             ]
             [ Table.thead [] (List.map (headerColumn model) columns)
             , Table.tbody []
-                (List.map (issueRow columns) sortedIssues)
+                (List.map (issueRow columns) filteredAndSortedIssues)
             ]
 
 
 headerColumn : Model -> Key -> Html Msg
-headerColumn ( issues, currentKey, order ) sortKey =
+headerColumn { issues, sortKey, sortOrder } key =
     let
         attrs =
-            if currentKey == sortKey then
-                case order of
+            if sortKey == key then
+                case sortOrder of
                     ASC ->
-                        [ Table.ascending, Table.onClick (Reorder sortKey) ]
+                        [ Table.ascending, Table.onClick (Reorder key) ]
 
                     DSC ->
-                        [ Table.descending, Table.onClick (Reorder sortKey) ]
+                        [ Table.descending, Table.onClick (Reorder key) ]
             else
-                [ Table.onClick (Reorder sortKey) ]
+                [ Table.onClick (Reorder key) ]
 
-        columnName sortKey =
-            case sortKey of
+        columnName key =
+            case key of
                 SubmissionTimestamp ->
                     "Submission Timestamp"
 
@@ -234,7 +273,7 @@ headerColumn ( issues, currentKey, order ) sortKey =
                 EmployeeName ->
                     "Employee Name"
     in
-        Table.th attrs [ text (columnName sortKey) ]
+        Table.th attrs [ text (columnName key) ]
 
 
 dateTimeToString : T.DateTime -> String
