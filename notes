@@ -1,3 +1,24 @@
+TODO:
+  Add a text field + dropdwon so User can filter issues by:
+    Customer Name
+    Employee Name
+    Description
+    Customer Email
+  Add a dropdown so User can filter issues by
+    All
+    Open
+    Closed
+  Probably wrap this form stuff inside a Grid
+
+Later improvements:
+  Add 2?/4? calendar widgets so Users can filter by
+    Submission Timestamp
+    Closed Timestamp
+    Is there a better way UI pattern o use here?
+      Users need to be able to define intervals for both submission and closed timestamps
+      Sliders?
+      Text?
+
 Use elm-sortable-table or stick w/ elm-mdl's standard table component?
 
 

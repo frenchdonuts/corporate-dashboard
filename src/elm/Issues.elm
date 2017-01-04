@@ -173,7 +173,7 @@ update msg model =
                 if newKey == sortKey then
                     { model | sortOrder = cycle sortOrder }
                 else
-                    { model | sortOrder = ASC }
+                    { model | sortOrder = ASC, sortKey = newKey }
 
             NoOp ->
                 model
