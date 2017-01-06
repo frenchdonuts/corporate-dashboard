@@ -1,16 +1,10 @@
 TODO:
-  Lock headers so User can see columns even when they are scrolling down
-  Add a text field + dropdwon so User can filter issues by:
-    Customer Name
-    Employee Name
-    Description
-    Customer Email
-    Do we need a dropdown?
-  Add a dropdown so User can filter issues by
+  Lock filter form area and table header so User can see columns while they are scrolling down
+  Allow Users to filter issues by
     All
     Open
     Closed
-  Probably wrap this form stuff inside a Grid
+
 
 Later improvements:
   Add 2?/4? calendar widgets so Users can filter by
@@ -21,7 +15,6 @@ Later improvements:
       Sliders?
       Text?
 
-Use elm-sortable-table or stick w/ elm-mdl's standard table component?
 
 
 

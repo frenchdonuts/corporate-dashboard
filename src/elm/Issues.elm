@@ -335,7 +335,7 @@ issueRow columns issue =
                     toTd customerName
 
                 CustomerEmail ->
-                    toTd employeeName
+                    toTd customerEmailAddress
 
                 Description ->
                     toTd description
