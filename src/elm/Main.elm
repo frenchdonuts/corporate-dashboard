@@ -118,7 +118,11 @@ update msg model =
             { model | keyMetrics = K.update msg model.keyMetrics } ! []
 
         IssuesMsg msg ->
-            { model | issues = I.update msg model.issues } ! []
+            let
+                ( issues_, cmd ) =
+                    I.update msg model.issues
+            in
+                { model | issues = issues_ } ! [ Cmd.map IssuesMsg cmd ]
 
         NewUrl url ->
             ( model, Navigation.newUrl url )

@@ -3,7 +3,10 @@ module Issues exposing (..)
 import CSVParser exposing (..)
 import Combine exposing ((<$>), (<*>))
 import Time.DateTime as T
-import Html as H exposing (Html, text)
+import Html as H exposing (Html, div, text)
+import Html.Attributes as A
+import Material
+import Material.Textfield as Text
 import Material.Table as Table
 import Material.Grid as Grid
 import Material.Options as O
@@ -16,6 +19,7 @@ type alias Model =
     , sortOrder : SortOrder
     , filterKey : Key
     , filterString : String
+    , mdl : Material.Model
     }
 
 
@@ -134,7 +138,9 @@ parseIssue =
 
 type Msg
     = Issues (Result Http.Error String)
+    | SetFilterString String
     | Reorder Key
+    | Mdl (Material.Msg Msg)
     | NoOp
 
 
@@ -145,11 +151,12 @@ init =
     , sortOrder = DSC
     , filterKey = CustomerName
     , filterString = ""
+    , mdl = Material.model
     }
         ! [ getIssuesCSVCmd ]
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         { issues, sortKey, sortOrder, filterKey, filterString } =
@@ -161,22 +168,28 @@ update msg model =
                     Ok csv ->
                         case Combine.parse parseIssues csv of
                             Ok ( _, _, issues ) ->
-                                { model | issues = issues }
+                                { model | issues = issues } ! []
 
                             Err err ->
-                                Debug.log ("CSV parser error: " ++ (toString err)) model
+                                Debug.log ("CSV parser error: " ++ (toString err)) model ! []
 
                     Err err ->
-                        model
+                        model ! []
+
+            SetFilterString str ->
+                { model | filterString = str } ! []
 
             Reorder newKey ->
                 if newKey == sortKey then
-                    { model | sortOrder = cycle sortOrder }
+                    { model | sortOrder = cycle sortOrder } ! []
                 else
-                    { model | sortOrder = ASC, sortKey = newKey }
+                    { model | sortOrder = ASC, sortKey = newKey } ! []
+
+            Mdl msg ->
+                Material.update msg model
 
             NoOp ->
-                model
+                model ! []
 
 
 view : Model -> Html Msg
@@ -185,31 +198,16 @@ view model =
         { issues, sortKey, sortOrder, filterKey, filterString } =
             model
 
-        containsFilterString =
-            String.contains filterString
+        containsFilterString str =
+            String.contains (String.toLower filterString) (String.toLower str)
 
         filter issue =
-            case filterKey of
-                SubmissionTimestamp ->
-                    containsFilterString <| T.toISO8601 issue.submissionTimestamp
-
-                CustomerName ->
-                    containsFilterString issue.customerName
-
-                CustomerEmail ->
-                    containsFilterString issue.customerEmailAddress
-
-                Description ->
-                    containsFilterString issue.description
-
-                Open ->
-                    containsFilterString <| toString issue.open
-
-                ClosedTimestamp ->
-                    containsFilterString <| T.toISO8601 issue.closedTimestamp
-
-                EmployeeName ->
-                    containsFilterString issue.employeeName
+            List.any containsFilterString
+                [ issue.customerName
+                , issue.customerEmailAddress
+                , issue.description
+                , issue.employeeName
+                ]
 
         filteredAndSortedIssues =
             issues
@@ -226,14 +224,42 @@ view model =
             , ClosedTimestamp
             ]
     in
-        Table.table
-            [ O.css "display" "block"
-            , O.css "overflow-x" "scroll"
+        div
+            [ A.style [ ( "position", "relative" ) ] ]
+            [ Grid.grid []
+                [ Grid.cell
+                    [ O.css "z-index" "3"
+                    ]
+                    (form model)
+                ]
+            , Table.table
+                [ O.css "display" "block"
+                , O.css "overflow-x" "scroll"
+                ]
+                [ Table.thead
+                    [ O.css "z-index" "3"
+                    ]
+                    (List.map (headerColumn model) columns)
+                , Table.tbody
+                    []
+                    (List.map (issueRow columns) filteredAndSortedIssues)
+                ]
             ]
-            [ Table.thead [] (List.map (headerColumn model) columns)
-            , Table.tbody []
-                (List.map (issueRow columns) filteredAndSortedIssues)
+
+
+form : Model -> List (Html Msg)
+form model =
+    let
+        { filterString } =
+            model
+    in
+        [ Text.render Mdl
+            [ 0 ]
+            model.mdl
+            [ Text.value filterString
+            , Text.onInput SetFilterString
             ]
+        ]
 
 
 headerColumn : Model -> Key -> Html Msg

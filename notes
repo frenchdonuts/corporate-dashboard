@@ -1,9 +1,11 @@
 TODO:
+  Lock headers so User can see columns even when they are scrolling down
   Add a text field + dropdwon so User can filter issues by:
     Customer Name
     Employee Name
     Description
     Customer Email
+    Do we need a dropdown?
   Add a dropdown so User can filter issues by
     All
     Open
