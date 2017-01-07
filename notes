@@ -1,25 +1,22 @@
-TODO:
-  Lock filter form area and table header so User can see columns while they are scrolling down
-  Allow Users to filter issues by
-    All
-    Open
-    Closed
+Issues
+  TODO
+    Lock filter form area and table header so User can see columns while they are scrolling down
+    Allow Users to filter issues by
+      All
+      Open
+      Closed
+  Later improvements:
+    Add 2?/4? calendar widgets so Users can filter by
+      Submission Timestamp
+      Closed Timestamp
+      Is there a better way UI pattern o use here?
+        Users need to be able to define intervals for both submission and closed timestamps
+        Sliders?
+        Text?
 
+Geospatial
+  TODO
+    When User clicks on a row, zoom in on corresponding City in Google Maps
+      When User clicks again, go back to default zoom (zoom lv to fit US)
+    Style arrows so they are smaller
 
-Later improvements:
-  Add 2?/4? calendar widgets so Users can filter by
-    Submission Timestamp
-    Closed Timestamp
-    Is there a better way UI pattern o use here?
-      Users need to be able to define intervals for both submission and closed timestamps
-      Sliders?
-      Text?
-
-
-
-
-Call the "company":
-  Massive Corp Inc.
-  Over-Employed Corp Inc.
-
-Relabel "customers" to "clients"
