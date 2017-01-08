@@ -144,25 +144,48 @@ view model =
 googleMap : Model -> Html Msg
 googleMap model =
     let
-        { geospatialData } =
+        { geospatialData, selectedCity } =
             model
+
+        zoom =
+            case selectedCity of
+                Just _ ->
+                    "4"
+
+                Nothing ->
+                    ""
+
+        mapMarkers =
+            selectedCity
+                |> Maybe.andThen (\city -> Maybe.map ((,) city) (D.get city geospatialData))
+                |> Maybe.map (flip (::) [])
+                |> Maybe.withDefault (D.toList geospatialData)
+                |> List.map toMarker
 
         toMarker ( city, location ) =
             googleMapMarker location.latitude location.longitude city
     in
         H.node "google-map"
-            []
-            (D.toList geospatialData |> List.map toMarker)
+            [ attribute "fit-to-markers" ""
+            , attribute "disable-default-ui" ""
+            , attribute "disable-zoom" ""
+            , attribute "zoom" zoom
+            ]
+            mapMarkers
 
 
 googleMapMarker : Float -> Float -> String -> Html Msg
 googleMapMarker lat lon title =
-    H.node "google-map-marker"
-        [ attribute "latitude" (toString lat)
-        , attribute "longitude" (toString lon)
-        , attribute "title" title
-        ]
-        []
+    let
+        infoPane =
+            []
+    in
+        H.node "google-map-marker"
+            [ attribute "latitude" (toString lat)
+            , attribute "longitude" (toString lon)
+            , attribute "title" title
+            ]
+            []
 
 
 header : List Column -> Model -> List (G.Cell Msg)
