@@ -1,3 +1,10 @@
+Geospatial
+  TODO
+    When User clicks on a row, zoom in on corresponding City in Google Maps
+      When User clicks again, go back to default zoom (zoom lv to fit US)
+    Change zoom lv depending on window size
+    Style arrows so they are smaller
+
 Issues
   TODO
     Lock filter form area and table header so User can see columns while they are scrolling down
@@ -14,9 +21,4 @@ Issues
         Sliders?
         Text?
 
-Geospatial
-  TODO
-    When User clicks on a row, zoom in on corresponding City in Google Maps
-      When User clicks again, go back to default zoom (zoom lv to fit US)
-    Style arrows so they are smaller
 

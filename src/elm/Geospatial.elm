@@ -1,8 +1,8 @@
 module Geospatial exposing (..)
 
 import Dict as D
-import Html as H exposing (Html, node)
-import Html.Attributes as A
+import Html as H exposing (Html)
+import Html.Attributes as A exposing (attribute)
 import Html.Events as E
 import Material.Grid as G
 import Material.Typography as T
@@ -126,10 +126,43 @@ view model =
             [ City
             , EmployeeCount
             ]
+
+        map =
+            G.cell
+                [ G.size G.Desktop 12
+                , G.size G.Tablet 8
+                , G.size G.Phone 4
+                , O.css "height" "400px"
+                ]
+                [ googleMap model ]
     in
         G.grid
             [ O.css "margin-top" "48px" ]
-            (header columns model ++ body columns model)
+            ([ map ] ++ header columns model ++ body columns model)
+
+
+googleMap : Model -> Html Msg
+googleMap model =
+    let
+        { geospatialData } =
+            model
+
+        toMarker ( city, location ) =
+            googleMapMarker location.latitude location.longitude city
+    in
+        H.node "google-map"
+            []
+            (D.toList geospatialData |> List.map toMarker)
+
+
+googleMapMarker : Float -> Float -> String -> Html Msg
+googleMapMarker lat lon title =
+    H.node "google-map-marker"
+        [ attribute "latitude" (toString lat)
+        , attribute "longitude" (toString lon)
+        , attribute "title" title
+        ]
+        []
 
 
 header : List Column -> Model -> List (G.Cell Msg)
