@@ -163,7 +163,7 @@ googleMap model =
                 |> List.map toMarker
 
         toMarker ( city, location ) =
-            googleMapMarker location.latitude location.longitude city
+            googleMapMarker city location
     in
         H.node "google-map"
             [ attribute "fit-to-markers" ""
@@ -174,18 +174,23 @@ googleMap model =
             mapMarkers
 
 
-googleMapMarker : Float -> Float -> String -> Html Msg
-googleMapMarker lat lon title =
+googleMapMarker : String -> Location -> Html Msg
+googleMapMarker city location =
     let
+        { latitude, longitude, employeeCount } =
+            location
+
         infoPane =
-            []
+            H.span []
+                [ H.text <| (toString employeeCount) ++ " employees"
+                ]
     in
         H.node "google-map-marker"
-            [ attribute "latitude" (toString lat)
-            , attribute "longitude" (toString lon)
-            , attribute "title" title
+            [ attribute "latitude" (toString latitude)
+            , attribute "longitude" (toString longitude)
+            , attribute "title" city
             ]
-            []
+            [ infoPane ]
 
 
 header : List Column -> Model -> List (G.Cell Msg)
