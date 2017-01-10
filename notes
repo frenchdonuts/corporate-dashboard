@@ -1,6 +1,6 @@
 Key Metrics
   Ahhh...now we come to a decision. We need the number of open issues displayed on this page.
-  But we have our List Issue in our Geospatial page's model! What to do?
+  But we have our List Issue in our Issue page's model! What to do?
   Now I realize why we start with one giant Model Update View and wait to see how our app will
    evolve before deciding how to decompose it.
   Several ways to handle this:
