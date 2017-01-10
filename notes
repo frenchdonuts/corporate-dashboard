@@ -1,3 +1,6 @@
+Bar Charts
+  Shape.bar
+  Shape.barChart
 Key Metrics
   Ahhh...now we come to a decision. We need the number of open issues displayed on this page.
   But we have our List Issue in our Issue page's model! What to do?

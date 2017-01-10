@@ -1,26 +1,32 @@
 module KeyMetrics exposing (..)
 
 import Html as H exposing (Html)
-import Chart exposing (lChart, vBar, title, toHtml)
+import Chart exposing (lChart, vBar, hBar, title, updateStyles, toHtml)
+import Visualization.Scale as Scale exposing (ContinuousScale, ContinuousTimeScale)
+import Visualization.Axis as Axis
+import Visualization.List as List
+import Visualization.Shape as Shape
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 import Http
 import Json.Decode as J
 import RemoteData as R
 
 
 type alias Model =
-    { payingCustomersOverTimeData : List ( Float, String )
+    { payingCustomersOverTimeData : R.RemoteData Http.Error (List ( Float, String ))
     , issuesOverTimeData : R.RemoteData Http.Error (List ( Float, String ))
     }
 
 
 type Msg
     = NoOp
-    | IssuesOverTimeDataFetched (R.RemoteData Http.Error (List Float))
+    | DataFetched (R.RemoteData Http.Error ( List Float, List Float ))
 
 
 init : ( Model, Cmd Msg )
 init =
-    { payingCustomersOverTimeData = []
+    { payingCustomersOverTimeData = R.NotAsked
     , issuesOverTimeData = R.NotAsked
     }
         ! [ fetchIssuesOverTimeData ]
@@ -30,10 +36,12 @@ fetchIssuesOverTimeData : Cmd Msg
 fetchIssuesOverTimeData =
     let
         decoder =
-            J.field "issuesOverTimeData" (J.list J.float)
+            J.map2 (,)
+                (J.field "issuesOverTimeData" (J.list J.float))
+                (J.field "payingCustomersOverTimeData" (J.list J.float))
     in
         Http.get "http://localhost:8080/static/key_metrics.json" decoder
-            |> Http.send (R.fromResult >> IssuesOverTimeDataFetched)
+            |> Http.send (R.fromResult >> DataFetched)
 
 
 update : Msg -> Model -> Model
@@ -42,8 +50,21 @@ update msg model =
         NoOp ->
             model
 
-        IssuesOverTimeDataFetched remoteData ->
-            { model | issuesOverTimeData = R.map (List.indexedMap (\i f -> ( f, toMonth i ))) remoteData }
+        DataFetched remoteData ->
+            let
+                toChartData =
+                    List.indexedMap (\i f -> ( f, toMonth i ))
+
+                payingCustomersOverTime =
+                    R.map (Tuple.first >> toChartData) remoteData
+
+                issuesOverTime =
+                    R.map (Tuple.second >> toChartData) remoteData
+            in
+                { model
+                    | payingCustomersOverTimeData = payingCustomersOverTime
+                    , issuesOverTimeData = issuesOverTime
+                }
 
 
 toMonth : Int -> String
@@ -83,10 +104,31 @@ view model =
         defaultHtml =
             H.div [] []
 
+        payingCustomersOverTimeDataChart =
+            lChart
+                >> Chart.title "Customers Over Time"
+
         issuesOverTimeChart =
-            R.map (vBar >> title "Issues over time" >> toHtml) issuesOverTimeData
+            hBar
+                >> Chart.title "Issues Over Time"
+
+        chartHtml chart data =
+            R.map (chart >> toHtml) data
                 |> R.withDefault defaultHtml
     in
         H.div
             []
-            [ issuesOverTimeChart ]
+            [ chartHtml payingCustomersOverTimeDataChart payingCustomersOverTimeData
+            , chartHtml issuesOverTimeChart issuesOverTimeData
+            ]
+
+
+issuesOverTimeBarChart : Model -> Svg Msg
+issuesOverTimeBarChart model =
+    let
+        { issuesOverTimeData } =
+            model
+    in
+        svg
+            []
+            []
