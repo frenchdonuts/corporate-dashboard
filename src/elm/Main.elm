@@ -124,7 +124,15 @@ update msg model =
             { model | geospatial = G.update msg model.geospatial } ! []
 
         KeyMetricsMsg msg ->
-            { model | keyMetrics = K.update msg model.keyMetrics } ! []
+            let
+                fetchIssuesCmd =
+                    if model.issues |> R.isNotAsked then
+                        Cmd.map IssuesDataFetched DI.getIssuesCmd
+                    else
+                        Cmd.none
+            in
+                { model | keyMetrics = K.update msg model.keyMetrics }
+                    ! [ fetchIssuesCmd ]
 
         IssuesMsg msg ->
             let
