@@ -120,30 +120,16 @@ update msg model =
             { model | geospatial = G.update msg model.geospatial } ! []
 
         KeyMetricsMsg msg ->
-            let
-                fetchIssuesCmd =
-                    if model.issues |> R.isNotAsked then
-                        Cmd.map IssuesDataFetched DI.getIssuesCmd
-                    else
-                        Cmd.none
-            in
-                { model | keyMetrics = K.update msg model.keyMetrics }
-                    ! [ fetchIssuesCmd ]
+            { model | keyMetrics = K.update msg model.keyMetrics }
+                ! []
 
         IssuesMsg msg ->
             let
                 ( issuesPage_, cmd ) =
                     I.update msg model.issuesPage
-
-                fetchIssuesCmd =
-                    if model.issues |> R.isNotAsked then
-                        Cmd.map IssuesDataFetched DI.getIssuesCmd
-                    else
-                        Cmd.none
             in
                 { model | issuesPage = issuesPage_ }
                     ! [ Cmd.map IssuesMsg cmd
-                      , fetchIssuesCmd
                       ]
 
         IssuesDataFetched remoteData ->
@@ -153,8 +139,18 @@ update msg model =
             ( model, Navigation.newUrl url )
 
         UrlChange navLocation ->
-            { model | history = parsePath route navLocation :: model.history }
-                ! []
+            let
+                newPage =
+                    parsePath route navLocation
+
+                fetchIssuesCmd =
+                    if (newPage == Just KeyMetrics || newPage == Just Issues) && (model.issues |> R.isNotAsked) then
+                        Cmd.map IssuesDataFetched DI.getIssuesCmd
+                    else
+                        Cmd.none
+            in
+                { model | history = newPage :: model.history }
+                    ! [ fetchIssuesCmd ]
 
         Mdl msg ->
             Material.update msg model

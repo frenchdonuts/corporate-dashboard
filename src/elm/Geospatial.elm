@@ -11,6 +11,7 @@ import Material.Color as C
 import Material.Icon as I
 import Http
 import Json.Decode as J
+import Misc exposing ((+|+))
 
 
 type alias Model =
@@ -384,11 +385,3 @@ columnDataToString entry column =
 indexedConcatMap : (Int -> a -> List b) -> List a -> List b
 indexedConcatMap f xs =
     List.concat (List.indexedMap f xs)
-
-
-(+|+) : Bool -> List a -> List a -> List a
-(+|+) append xs2 xs1 =
-    if append then
-        xs1 ++ xs2
-    else
-        xs1

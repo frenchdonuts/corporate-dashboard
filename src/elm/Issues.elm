@@ -7,10 +7,12 @@ import Html.Attributes as A
 import Material
 import Material.Textfield as Text
 import Material.Table as Table
+import Material.Spinner as Spinner
 import Material.Grid as Grid
 import Material.Options as O
 import Http
 import RemoteData as R
+import Misc exposing ((+|+))
 
 
 type alias Model =
@@ -147,6 +149,9 @@ view remoteDataIssues model =
         { sortKey, sortOrder, filterKey, filterString } =
             model
 
+        loaderOn =
+            R.isNotAsked remoteDataIssues || R.isLoading remoteDataIssues
+
         issues =
             R.withDefault [] remoteDataIssues
 
@@ -178,25 +183,30 @@ view remoteDataIssues model =
     in
         div
             [ A.style [ ( "position", "relative" ) ] ]
-            [ Grid.grid []
+            ([ Grid.grid []
                 [ Grid.cell
                     [ O.css "z-index" "3"
                     ]
                     (form model)
                 ]
-            , Table.table
-                [ O.css "display" "block"
-                , O.css "overflow-x" "scroll"
-                ]
-                [ Table.thead
-                    [ O.css "z-index" "3"
+             ]
+                |> (+|+) (not loaderOn)
+                    [ Table.table
+                        [ O.css "display" "block"
+                        , O.css "overflow-x" "scroll"
+                        ]
+                        [ Table.thead
+                            [ O.css "z-index" "3"
+                            ]
+                            (List.map (headerColumn model) columns)
+                        , Table.tbody
+                            []
+                            (List.map (issueRow columns) filteredAndSortedIssues)
+                        ]
                     ]
-                    (List.map (headerColumn model) columns)
-                , Table.tbody
-                    []
-                    (List.map (issueRow columns) filteredAndSortedIssues)
-                ]
-            ]
+                |> (+|+) loaderOn
+                    [ Spinner.spinner [ Spinner.active loaderOn ] ]
+            )
 
 
 form : Model -> List (Html Msg)
