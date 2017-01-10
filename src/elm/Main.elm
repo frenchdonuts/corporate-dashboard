@@ -11,6 +11,7 @@ import Material.Layout as L
 import Material.Options as O
 import Navigation
 import UrlParser exposing (Parser, top, s, oneOf, map, parsePath)
+import RemoteData as R
 
 
 -- TOP-LEVEL (where all the routing takes place)
@@ -39,7 +40,8 @@ type alias Model =
     , home : H.Model
     , geospatial : G.Model
     , keyMetrics : K.Model
-    , issues : I.Model
+    , issuesPage : I.Model
+    , issues : R.RemoteData String (List DI.Issue)
     }
 
 
@@ -51,6 +53,7 @@ type Msg
     | GeospatialMsg G.Msg
     | KeyMetricsMsg K.Msg
     | IssuesMsg I.Msg
+    | IssuesDataFetched (R.RemoteData String (List DI.Issue))
 
 
 init : Navigation.Location -> ( Model, Cmd Msg )
@@ -69,7 +72,8 @@ init location =
         , home = H.init
         , geospatial = geospatialInitModel
         , keyMetrics = K.init
-        , issues = issuesInitModel
+        , issuesPage = issuesInitModel
+        , issues = R.NotAsked
         }
             ! [ L.sub0 Mdl
               , Cmd.map GeospatialMsg geospatialInitCmd
@@ -124,10 +128,22 @@ update msg model =
 
         IssuesMsg msg ->
             let
-                ( issues_, cmd ) =
-                    I.update msg model.issues
+                ( issuesPage_, cmd ) =
+                    I.update msg model.issuesPage
+
+                fetchIssuesCmd =
+                    if model.issues |> R.isNotAsked then
+                        Cmd.map IssuesDataFetched DI.getIssuesCmd
+                    else
+                        Cmd.none
             in
-                { model | issues = issues_ } ! [ Cmd.map IssuesMsg cmd ]
+                { model | issuesPage = issuesPage_ }
+                    ! [ Cmd.map IssuesMsg cmd
+                      , fetchIssuesCmd
+                      ]
+
+        IssuesDataFetched remoteData ->
+            { model | issues = remoteData } ! []
 
         NewUrl url ->
             ( model, Navigation.newUrl url )
@@ -143,7 +159,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        { history, mdl, home, geospatial, keyMetrics, issues } =
+        { history, mdl, home, geospatial, keyMetrics, issuesPage } =
             model
 
         currentPage =
@@ -166,7 +182,7 @@ view model =
                     H.map KeyMetricsMsg (K.view keyMetrics)
 
                 Issues ->
-                    H.map IssuesMsg (I.view issues)
+                    H.map IssuesMsg (I.view issuesPage)
     in
         L.render Mdl
             mdl

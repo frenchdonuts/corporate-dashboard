@@ -19,8 +19,8 @@ type alias Issue =
     }
 
 
-getIssuesCmd : (R.RemoteData String (List Issue) -> msg) -> Cmd msg
-getIssuesCmd msg =
+getIssuesCmd : Cmd (R.RemoteData String (List Issue))
+getIssuesCmd =
     let
         toIssues csv =
             C.parse parseIssues csv
@@ -35,7 +35,6 @@ getIssuesCmd msg =
             |> Http.toTask
             |> R.asCmd
             |> Cmd.map transform
-            |> Cmd.map msg
 
 
 parseIssues : C.Parser s (List Issue)
