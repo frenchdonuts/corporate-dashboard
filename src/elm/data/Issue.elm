@@ -19,16 +19,13 @@ type alias Issue =
     }
 
 
-getIssuesCSVCmd : (R.RemoteData String (List Issue) -> msg) -> Cmd msg
-getIssuesCSVCmd msg =
+getIssuesCmd : (R.RemoteData String (List Issue) -> msg) -> Cmd msg
+getIssuesCmd msg =
     let
         toIssues csv =
-            case C.parse parseIssues csv of
-                Ok ( _, _, issues ) ->
-                    Ok issues
-
-                Err err ->
-                    Err <| Debug.log ("Issues csv parser error: " ++ (toString err)) (toString err)
+            C.parse parseIssues csv
+                |> Result.map (\( _, _, issues ) -> issues)
+                |> Result.mapError toString
 
         transform remoteData =
             R.mapError toString remoteData
