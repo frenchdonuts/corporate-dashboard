@@ -4,6 +4,7 @@ import Home as H
 import Geospatial as G
 import KeyMetrics as K
 import Issues as I
+import Data.Issue as DI
 import Html as H exposing (Html)
 import Material
 import Material.Layout as L
