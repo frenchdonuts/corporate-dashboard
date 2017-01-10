@@ -205,7 +205,11 @@ view remoteDataIssues model =
                         ]
                     ]
                 |> (+|+) loaderOn
-                    [ Spinner.spinner [ Spinner.active loaderOn ] ]
+                    [ Spinner.spinner
+                        [ Spinner.active loaderOn
+                        , O.css "margin" "auto"
+                        ]
+                    ]
             )
 
 

@@ -27,13 +27,6 @@ main =
         }
 
 
-type Page
-    = Home
-    | Geospatial
-    | KeyMetrics
-    | Issues
-
-
 type alias Model =
     { history : List (Maybe Page)
     , mdl : Material.Model
@@ -43,6 +36,13 @@ type alias Model =
     , issuesPage : I.Model
     , issues : R.RemoteData String (List DI.Issue)
     }
+
+
+type Page
+    = Home
+    | Geospatial
+    | KeyMetrics
+    | Issues
 
 
 type Msg
@@ -63,7 +63,7 @@ init location =
             G.init
     in
         { history =
-            [ Just Geospatial ]
+            [ Just KeyMetrics ]
             --parsePath route location ]
         , mdl = Material.model
         , home = H.init
