@@ -61,6 +61,9 @@ init location =
     let
         ( geospatialInitModel, geospatialInitCmd ) =
             G.init
+
+        ( keyMetricsInitModel, keyMetricsInitCmd ) =
+            K.init
     in
         { history =
             [ Just KeyMetrics ]
@@ -68,12 +71,13 @@ init location =
         , mdl = Material.model
         , home = H.init
         , geospatial = geospatialInitModel
-        , keyMetrics = K.init
+        , keyMetrics = keyMetricsInitModel
         , issuesPage = I.init
         , issues = R.NotAsked
         }
             ! [ L.sub0 Mdl
               , Cmd.map GeospatialMsg geospatialInitCmd
+              , Cmd.map KeyMetricsMsg keyMetricsInitCmd
               ]
 
 
