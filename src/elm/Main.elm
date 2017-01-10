@@ -61,9 +61,6 @@ init location =
     let
         ( geospatialInitModel, geospatialInitCmd ) =
             G.init
-
-        ( issuesInitModel, issuesInitCmd ) =
-            I.init
     in
         { history =
             [ Just Geospatial ]
@@ -72,12 +69,11 @@ init location =
         , home = H.init
         , geospatial = geospatialInitModel
         , keyMetrics = K.init
-        , issuesPage = issuesInitModel
+        , issuesPage = I.init
         , issues = R.NotAsked
         }
             ! [ L.sub0 Mdl
               , Cmd.map GeospatialMsg geospatialInitCmd
-              , Cmd.map IssuesMsg issuesInitCmd
               ]
 
 
@@ -167,7 +163,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        { history, mdl, home, geospatial, keyMetrics, issuesPage } =
+        { history, mdl, home, geospatial, keyMetrics, issuesPage, issues } =
             model
 
         currentPage =
@@ -190,7 +186,7 @@ view model =
                     H.map KeyMetricsMsg (K.view keyMetrics)
 
                 Issues ->
-                    H.map IssuesMsg (I.view issuesPage)
+                    H.map IssuesMsg (I.view issues issuesPage)
     in
         L.render Mdl
             mdl
