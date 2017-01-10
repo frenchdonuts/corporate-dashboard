@@ -6,11 +6,13 @@ import Visualization.Scale as Scale exposing (ContinuousScale, ContinuousTimeSca
 import Visualization.Axis as Axis
 import Visualization.List as List
 import Visualization.Shape as Shape
+import Visualization.Path as Path
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Http
 import Json.Decode as J
 import RemoteData as R
+import Date exposing (Date)
 
 
 type alias Model =
@@ -118,17 +120,94 @@ view model =
     in
         H.div
             []
-            [ chartHtml payingCustomersOverTimeDataChart payingCustomersOverTimeData
-            , chartHtml issuesOverTimeChart issuesOverTimeData
+            [ issuesOverTimeBarChart model
+              --, chartHtml payingCustomersOverTimeDataChart payingCustomersOverTimeData
+              --, chartHtml issuesOverTimeChart issuesOverTimeData
             ]
 
 
-issuesOverTimeBarChart : Model -> Svg Msg
+w : Float
+w =
+    900
+
+
+h : Float
+h =
+    450
+
+
+padding : Float
+padding =
+    30
+
+
+issuesOverTimeBarChart : Model -> Html Msg
 issuesOverTimeBarChart model =
     let
         { issuesOverTimeData } =
             model
+
+        xScale : ContinuousTimeScale
+        xScale =
+            Scale.time ( Date.fromTime 1448928000000, Date.fromTime 1456790400000 ) ( 0, w - 2 * padding )
+
+        yScale : ContinuousScale
+        yScale =
+            Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
+
+        opts : Axis.Options a
+        opts =
+            Axis.defaultOptions
+
+        xAxis : Svg msg
+        xAxis =
+            Axis.axis { opts | orientation = Axis.Bottom, tickCount = List.length data } xScale
+
+        yAxis : Svg msg
+        yAxis =
+            Axis.axis { opts | orientation = Axis.Left, tickCount = 5 } yScale
+
+        barGenerator : ( Date, Float ) -> Path.Path -> Path.Path
+        barGenerator ( x, y ) =
+            let
+                rw =
+                    30
+
+                -- Left
+                rx =
+                    (Scale.convert xScale x) - (rw / 2)
+
+                -- Top
+                ry =
+                    Scale.convert yScale y
+
+                rh =
+                    Tuple.first (Scale.rangeExtent yScale) - ry
+            in
+                Path.rect rx ry rw rh
+
+        bars : String
+        bars =
+            List.foldr barGenerator Path.begin data
+                |> Path.toAttrString
     in
         svg
-            []
-            []
+            [ width (toString w ++ "px"), height (toString h ++ "px") ]
+            [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+                [ xAxis ]
+            , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
+                [ yAxis ]
+            , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ]
+                [ Svg.path
+                    [ d bars, stroke "none", strokeWidth "3px", fill "rgba(255, 0, 0, 0.54)" ]
+                    []
+                ]
+            ]
+
+
+data =
+    [ ( Date.fromTime 1448928000000, 2 )
+    , ( Date.fromTime 1451606400000, 2 )
+    , ( Date.fromTime 1454284800000, 1 )
+    , ( Date.fromTime 1456790400000, 1 )
+    ]
