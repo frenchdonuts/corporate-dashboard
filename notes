@@ -1,8 +1,4 @@
 Bar Chart
-  Display our actual data
-    Get current Date
-    Create a list of Dates going back every month for 12 months
-    Pass in our list of Dates
   Make our chart responsive
     Install elm-lang/window
     Subscribe to resizes

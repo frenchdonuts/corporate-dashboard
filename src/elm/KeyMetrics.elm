@@ -47,8 +47,8 @@ fetchissuesOver12Months =
     let
         decoder =
             J.map2 (,)
-                (J.field "issuesOverTimeData" (J.list J.float))
                 (J.field "payingCustomersOverTimeData" (J.list J.float))
+                (J.field "issuesOverTimeData" (J.list J.float))
     in
         Http.get "http://localhost:8080/static/key_metrics.json" decoder
             |> Http.send (R.fromResult >> DataFetched)
@@ -85,30 +85,32 @@ update msg model =
 
 toMonth : Int -> String
 toMonth i =
-    if (i + 1) % 12 == 0 then
+    if i == 0 then
+        ""
+    else if i % 12 == 0 then
         "Dec"
-    else if (i + 1) % 11 == 0 then
-        "Nov"
-    else if (i + 1) % 10 == 0 then
-        "Oct"
-    else if (i + 1) % 9 == 0 then
-        "Sep"
-    else if (i + 1) % 8 == 0 then
-        "Aug"
-    else if (i + 1) % 7 == 0 then
-        "Jul"
-    else if (i + 1) % 6 == 0 then
-        "Jun"
-    else if (i + 1) % 5 == 0 then
-        "May"
-    else if (i + 1) % 4 == 0 then
-        "Apr"
-    else if (i + 1) % 3 == 0 then
-        "Mar"
-    else if (i + 1) % 2 == 0 then
-        "Feb"
-    else
+    else if i % 12 == 1 then
         "Jan"
+    else if i % 12 == 2 then
+        "Feb"
+    else if i % 12 == 3 then
+        "Mar"
+    else if i % 12 == 4 then
+        "Apr"
+    else if i % 12 == 5 then
+        "May"
+    else if i % 12 == 6 then
+        "Jun"
+    else if i % 12 == 7 then
+        "Jul"
+    else if i % 12 == 8 then
+        "Aug"
+    else if i % 12 == 9 then
+        "Sep"
+    else if i % 12 == 10 then
+        "Oct"
+    else
+        "Nov"
 
 
 view : Model -> Html Msg
@@ -133,7 +135,7 @@ view model =
                 |> R.withDefault defaultHtml
     in
         H.div
-            []
+            [ Svg.Attributes.style "text-align: center" ]
             [ issuesOverTimeBarChart model
               --, chartHtml payingCustomersOverTimeDataChart payingCustomersOverTimeData
               --, chartHtml issuesOverTimeChart issuesOver12Months
@@ -142,12 +144,12 @@ view model =
 
 w : Float
 w =
-    900
+    500
 
 
 h : Float
 h =
-    450
+    0.75 * w
 
 
 padding : Float
@@ -166,21 +168,28 @@ issuesOverTimeBarChart model =
                 |> Date.fromTime
                 |> flip (,) issuesThisMonth
 
+        -- Append dummy data, 0, to get our axis looking right
         data =
-            (\issues currentDate -> List.indexedMap (dataTransform currentDate (List.length issues)) issues)
+            (\issues currentDate -> List.indexedMap (,) (0 :: issues))
                 <$> (issuesOver12Months |> R.mapError toString)
                 <*> (currentDate |> Result.fromMaybe "" >> R.fromResult)
                 |> R.withDefault []
 
-        xScale : ContinuousTimeScale
+        xScale : ContinuousScale
         xScale =
-            Scale.time
-                ( List.head data |> Maybe.map Tuple.first |> Maybe.withDefault (Date.fromTime 1448928000000), List.reverse data |> List.head |> Maybe.map Tuple.first |> Maybe.withDefault (Date.fromTime 1456790400000) )
+            Scale.linear
+                ( 0, (toFloat << List.length) data )
                 ( 0, w - 2 * padding )
+
+        maxY =
+            List.map Tuple.second data
+                |> List.maximum
+                |> Maybe.withDefault 10
+                |> (*) 1.1
 
         yScale : ContinuousScale
         yScale =
-            Scale.linear ( 0, 5 ) ( h - 2 * padding, 0 )
+            Scale.linear ( 0, maxY ) ( h - 2 * padding, 0 )
 
         opts : Axis.Options a
         opts =
@@ -188,13 +197,19 @@ issuesOverTimeBarChart model =
 
         xAxis : Svg msg
         xAxis =
-            Axis.axis { opts | orientation = Axis.Bottom, tickCount = List.length data } xScale
+            Axis.axis
+                { opts
+                    | orientation = Axis.Bottom
+                    , tickCount = List.length data
+                    , tickFormat = Just (truncate >> toMonth)
+                }
+                xScale
 
         yAxis : Svg msg
         yAxis =
-            Axis.axis { opts | orientation = Axis.Left, tickCount = 5 } yScale
+            Axis.axis { opts | orientation = Axis.Left } yScale
 
-        barGenerator : ( Date, Float ) -> Path.Path -> Path.Path
+        barGenerator : ( Int, Float ) -> Path.Path -> Path.Path
         barGenerator ( x, y ) =
             let
                 rw =
@@ -202,7 +217,7 @@ issuesOverTimeBarChart model =
 
                 -- Left
                 rx =
-                    (Scale.convert xScale x) - (rw / 2)
+                    (Scale.convert xScale (toFloat x)) - (rw / 2)
 
                 -- Top
                 ry =
@@ -219,12 +234,12 @@ issuesOverTimeBarChart model =
                 |> Path.toAttrString
     in
         svg
-            [ width (toString w ++ "px"), height (toString h ++ "px") ]
+            [ width (toString w ++ "px"), height (toString h ++ "px"), Svg.Attributes.style "padding: 8px" ]
             [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
                 [ xAxis ]
             , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
                 [ yAxis ]
-            , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")"), class "series" ]
+            , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")") ]
                 [ Svg.path
                     [ d bars, stroke "none", strokeWidth "3px", fill "rgba(255, 0, 0, 0.54)" ]
                     []
