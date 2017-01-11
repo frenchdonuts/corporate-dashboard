@@ -8,7 +8,7 @@ import Visualization.List as List
 import Visualization.Shape as Shape
 import Visualization.Path as Path
 import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Svg.Attributes as SA exposing (..)
 import Http
 import Json.Decode as J
 import RemoteData as R
@@ -112,10 +112,15 @@ view model =
                 |> R.withDefault defaultHtml
     in
         H.div
-            [ Svg.Attributes.style "text-align: center" ]
-            [ H.h3 [] [ H.text "Issues Over Time" ]
-            , issuesBarChart model
-            , payingCustomersLineGraph model
+            [ SA.style "text-align: center" ]
+            [ H.div []
+                [ H.h3 [ SA.style "margin-bottom: -16px" ] [ H.text "Issues Over Time" ]
+                , issuesBarChart model
+                ]
+            , H.div []
+                [ H.h3 [ SA.style "margin-bottom: -16px" ] [ H.text "Paying Customers Over Time" ]
+                , payingCustomersLineGraph model
+                ]
             ]
 
 
