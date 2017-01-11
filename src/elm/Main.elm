@@ -1,6 +1,5 @@
 port module Main exposing (..)
 
-import Home as H
 import Geospatial as G
 import KeyMetrics as K
 import Issues as I
@@ -30,7 +29,6 @@ main =
 type alias Model =
     { history : List (Maybe Page)
     , mdl : Material.Model
-    , home : H.Model
     , geospatial : G.Model
     , keyMetrics : K.Model
     , issuesPage : I.Model
@@ -39,8 +37,7 @@ type alias Model =
 
 
 type Page
-    = Home
-    | Geospatial
+    = Geospatial
     | KeyMetrics
     | Issues
 
@@ -49,7 +46,6 @@ type Msg
     = NewUrl String
     | UrlChange Navigation.Location
     | Mdl (Material.Msg Msg)
-    | HomeMsg H.Msg
     | GeospatialMsg G.Msg
     | KeyMetricsMsg K.Msg
     | IssuesMsg I.Msg
@@ -67,10 +63,8 @@ init location =
             K.init
     in
         { history =
-            [ Just Geospatial ]
-            --parsePath route location ]
+            [ parsePath route location ]
         , mdl = Material.model
-        , home = H.init
         , geospatial = geospatialInitModel
         , keyMetrics = keyMetricsInitModel
         , issuesPage = I.init
@@ -85,8 +79,7 @@ init location =
 route : Parser (Page -> a) a
 route =
     oneOf
-        [ map Home top
-        , map Geospatial (s "geospatial")
+        [ map Geospatial (s "geospatial")
         , map KeyMetrics (s "keymetrics")
         , map Issues (s "issues")
         ]
@@ -95,9 +88,6 @@ route =
 pageToString : Page -> String
 pageToString p =
     case p of
-        Home ->
-            ""
-
         Geospatial ->
             "geospatial"
 
@@ -124,9 +114,6 @@ port issues : (Issue -> msg) -> Sub msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        HomeMsg msg ->
-            { model | home = H.update msg model.home } ! []
-
         GeospatialMsg msg ->
             let
                 ( geospatialModel, geospatialCmd ) =
@@ -177,22 +164,19 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        { history, mdl, home, geospatial, keyMetrics, issuesPage, issues } =
+        { history, mdl, geospatial, keyMetrics, issuesPage, issues } =
             model
 
         currentPage =
             case history of
                 maybePage :: history ->
-                    Maybe.withDefault Home maybePage
+                    Maybe.withDefault Geospatial maybePage
 
                 [] ->
-                    Home
+                    Geospatial
 
         mainView =
             case currentPage of
-                Home ->
-                    H.map HomeMsg (H.view home)
-
                 Geospatial ->
                     H.map GeospatialMsg (G.view geospatial)
 
