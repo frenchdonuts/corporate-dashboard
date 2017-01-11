@@ -67,7 +67,7 @@ init location =
             K.init
     in
         { history =
-            [ Just KeyMetrics ]
+            [ Just Geospatial ]
             --parsePath route location ]
         , mdl = Material.model
         , home = H.init
@@ -112,6 +112,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ L.subs Mdl model.mdl
+        , Sub.map GeospatialMsg G.subscriptions
         , Sub.map KeyMetricsMsg K.subscriptions
         , issues NewIssue
         ]
@@ -127,7 +128,11 @@ update msg model =
             { model | home = H.update msg model.home } ! []
 
         GeospatialMsg msg ->
-            { model | geospatial = G.update msg model.geospatial } ! []
+            let
+                ( geospatialModel, geospatialCmd ) =
+                    G.update msg model.geospatial
+            in
+                { model | geospatial = geospatialModel } ! [ Cmd.map GeospatialMsg geospatialCmd ]
 
         KeyMetricsMsg msg ->
             { model | keyMetrics = K.update msg model.keyMetrics }

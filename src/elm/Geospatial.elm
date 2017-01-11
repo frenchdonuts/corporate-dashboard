@@ -12,6 +12,9 @@ import Material.Icon as I
 import Http
 import Json.Decode as J
 import Misc exposing ((+|+))
+import Time exposing (every, second)
+import Random as R
+import List.Extra exposing (zip3)
 
 
 type alias Model =
@@ -36,6 +39,8 @@ type Msg
     | OnRowHover (Maybe Int)
     | OnClickHeader Column
     | OnClickRow String
+    | GenerateRandomNumbers Time.Time
+    | UpdateEmployeeCounts ( List (Int -> Int -> Int), List Int )
 
 
 type Column
@@ -75,7 +80,12 @@ geospatialDecoder =
         J.dict locationDecoder
 
 
-update : Msg -> Model -> Model
+subscriptions : Sub Msg
+subscriptions =
+    every (1 * second) GenerateRandomNumbers
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         { hoveredRowIndex, geospatialData, selectedColumn, isAscending, selectedCity } =
@@ -83,13 +93,13 @@ update msg model =
     in
         case msg of
             NoOp ->
-                model
+                model ! []
 
             GeospatialData fetchResult ->
-                { model | geospatialData = Result.withDefault model.geospatialData fetchResult }
+                { model | geospatialData = Result.withDefault model.geospatialData fetchResult } ! []
 
             OnRowHover maybeIndex ->
-                { model | hoveredRowIndex = maybeIndex }
+                { model | hoveredRowIndex = maybeIndex } ! []
 
             OnClickHeader column ->
                 let
@@ -103,6 +113,7 @@ update msg model =
                         | isAscending = sortOrderIsAscending
                         , selectedColumn = column
                     }
+                        ! []
 
             OnClickRow clickedCity ->
                 let
@@ -117,7 +128,48 @@ update msg model =
                                 else
                                     Just clickedCity
                 in
-                    { model | selectedCity = selectedCity_ }
+                    { model | selectedCity = selectedCity_ } ! []
+
+            GenerateRandomNumbers randomNumbers ->
+                let
+                    cityCount =
+                        D.size geospatialData
+
+                    operatorGenerator =
+                        R.bool
+                            |> R.map
+                                (\b ->
+                                    if b then
+                                        (+)
+                                    else
+                                        (-)
+                                )
+
+                    generateCmd =
+                        R.generate UpdateEmployeeCounts <|
+                            R.pair
+                                (R.list cityCount operatorGenerator)
+                                (R.list cityCount (R.int 10 500))
+                in
+                    model ! [ generateCmd ]
+
+            UpdateEmployeeCounts ( ops, randomNumbers ) ->
+                let
+                    changeEmployeeCount ( op, randomInt, ( cityName, location ) ) =
+                        ( cityName, updateEmployeeCount location (op location.employeeCount randomInt) )
+
+                    updateEmployeeCount location newCount =
+                        if newCount < 0 then
+                            location
+                        else
+                            { location | employeeCount = newCount }
+
+                    geospatialData_ =
+                        zip3 ops randomNumbers (D.toList geospatialData)
+                            |> List.map changeEmployeeCount
+                            |> D.fromList
+                in
+                    { model | geospatialData = geospatialData_ } ! []
 
 
 view : Model -> Html Msg
@@ -139,63 +191,7 @@ view model =
     in
         G.grid
             [ O.css "margin-top" "48px" ]
-            ([ map ] ++ header columns model ++ body columns model)
-
-
-googleMap : Model -> Html Msg
-googleMap model =
-    let
-        { geospatialData, selectedCity } =
-            model
-
-        zoom =
-            case selectedCity of
-                Just _ ->
-                    "4"
-
-                Nothing ->
-                    ""
-
-        mapMarkers =
-            selectedCity
-                |> Maybe.andThen (\city -> Maybe.map ((,) city) (D.get city geospatialData))
-                |> Maybe.map (flip (::) [])
-                |> Maybe.withDefault (D.toList geospatialData)
-                |> List.map toMarker
-
-        toMarker ( city, location ) =
-            googleMapMarker city location
-
-        apiKey =
-            "AIzaSyCsjmyyLuHgaDD9YRneYd0Qh8ww6lvqtas"
-    in
-        H.node "google-map"
-            [ attribute "key" apiKey
-            , attribute "fit-to-markers" ""
-            , attribute "disable-default-ui" ""
-            , attribute "disable-zoom" ""
-            , attribute "zoom" zoom
-            ]
-            mapMarkers
-
-
-googleMapMarker : String -> Location -> Html Msg
-googleMapMarker city location =
-    let
-        { latitude, longitude, employeeCount } =
-            location
-
-        infoPane =
-            H.span []
-                [ H.text <| (toString employeeCount) ++ " employees"
-                ]
-    in
-        H.node "google-map-marker"
-            [ attribute "latitude" (toString latitude)
-            , attribute "longitude" (toString longitude)
-            , attribute "title" city
-            ]
-            [ infoPane ]
+            (header columns model ++ body columns model)
 
 
 header : List Column -> Model -> List (G.Cell Msg)
@@ -389,3 +385,59 @@ columnDataToString entry column =
 indexedConcatMap : (Int -> a -> List b) -> List a -> List b
 indexedConcatMap f xs =
     List.concat (List.indexedMap f xs)
+
+
+googleMap : Model -> Html Msg
+googleMap model =
+    let
+        { geospatialData, selectedCity } =
+            model
+
+        zoom =
+            case selectedCity of
+                Just _ ->
+                    "4"
+
+                Nothing ->
+                    ""
+
+        mapMarkers =
+            selectedCity
+                |> Maybe.andThen (\city -> Maybe.map ((,) city) (D.get city geospatialData))
+                |> Maybe.map (flip (::) [])
+                |> Maybe.withDefault (D.toList geospatialData)
+                |> List.map toMarker
+
+        toMarker ( city, location ) =
+            googleMapMarker city location
+
+        apiKey =
+            "AIzaSyCsjmyyLuHgaDD9YRneYd0Qh8ww6lvqtas"
+    in
+        H.node "google-map"
+            [ attribute "api-key" apiKey
+            , attribute "fit-to-markers" ""
+            , attribute "disable-default-ui" ""
+            , attribute "disable-zoom" ""
+            , attribute "zoom" zoom
+            ]
+            mapMarkers
+
+
+googleMapMarker : String -> Location -> Html Msg
+googleMapMarker city location =
+    let
+        { latitude, longitude, employeeCount } =
+            location
+
+        infoPane =
+            H.span []
+                [ H.text <| (toString employeeCount) ++ " employees"
+                ]
+    in
+        H.node "google-map-marker"
+            [ attribute "latitude" (toString latitude)
+            , attribute "longitude" (toString longitude)
+            , attribute "title" city
+            ]
+            [ infoPane ]
