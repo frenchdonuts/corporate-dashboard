@@ -1,27 +1,17 @@
-Bar Chart
-  Make the last month on the x-axis the actual current month
 
 Key Metrics
-  Ahhh...now we come to a decision. We need the number of open issues displayed on this page.
-  But we have our List Issue in our Issue page's model! What to do?
-  Now I realize why we start with one giant Model Update View and wait to see how our app will
-   evolve before deciding how to decompose it.
-  Several ways to handle this:
-    Re-fetch List Issue. Make sure they stay synced
-    Move List Issue up the Model hierarchy.
-
-  My thoughts on the best way to handle this situtation: 
-    Stick to ONE SOURCE OF TRUTH!
-    We will move our List Issue up to the highest level and store it in a Union Type that can re-
-     present multiple states (NotAsked | Loading | Failure e | Success a) et. al Kris Jenkins.
-    We will kick off the fetching of the Issues data in our Router, basically when we navigate to
-     either Issues page or Key Metrics page AND we have not fetched it yet (anything besides 
-     Success a state)
-    Then, we will insert our List Issue as an extra parameter in KeyMetrics.view and Issues.view
+  Bar Chart
+    Add title
+    Make the last month on the x-axis the actual current month
+  Line Graph
+    Add title
+  Refactor:
+    Pull common code between Bar Chart and Line Graph into fn(s)
 
   I like this pattern though:
     Decompose into distince Pages w/ their own Model Update View
     When data needs to be shared among pages, move it up the hierarchy
+    Make sure remote data that we fetch is modeled using RemoteData data type
 Geospatial
   TODO
     When User clicks on a row, zoom in on corresponding City in Google Maps

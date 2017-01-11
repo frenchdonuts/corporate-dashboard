@@ -20,7 +20,7 @@ import Window
 
 
 type alias Model =
-    { payingCustomersOverTimeData : R.RemoteData Http.Error (List ( Float, String ))
+    { payingCustomersOver12Months : R.RemoteData Http.Error (List Float)
     , issuesOver12Months : R.RemoteData Http.Error (List Float)
     , currentDate : Maybe Date.Date
     , windowSize : Window.Size
@@ -36,12 +36,12 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    { payingCustomersOverTimeData = R.NotAsked
+    { payingCustomersOver12Months = R.NotAsked
     , issuesOver12Months = R.NotAsked
     , currentDate = Nothing
     , windowSize = { width = 0, height = 0 }
     }
-        ! [ fetchissuesOver12Months
+        ! [ fetchData
           , Task.perform CurrentTimeFetched Date.now
           , Task.perform OnWindowResize Window.size
           ]
@@ -52,8 +52,8 @@ subscriptions =
     Window.resizes OnWindowResize
 
 
-fetchissuesOver12Months : Cmd Msg
-fetchissuesOver12Months =
+fetchData : Cmd Msg
+fetchData =
     let
         decoder =
             J.map2 (,)
@@ -72,20 +72,14 @@ update msg model =
 
         DataFetched remoteData ->
             let
-                toChartData =
-                    List.indexedMap (\i f -> ( f, toMonth i ))
-
-                toChartData_ =
-                    List.indexedMap (\i f -> ( Misc.toMonth i, f ))
-
                 payingCustomersOverTime =
-                    R.map (Tuple.first >> toChartData) remoteData
+                    R.map Tuple.first remoteData
 
                 issuesOverTime =
                     R.map Tuple.second remoteData
             in
                 { model
-                    | payingCustomersOverTimeData = payingCustomersOverTime
+                    | payingCustomersOver12Months = payingCustomersOverTime
                     , issuesOver12Months = issuesOverTime
                 }
 
@@ -99,13 +93,13 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        { payingCustomersOverTimeData, issuesOver12Months } =
+        { payingCustomersOver12Months, issuesOver12Months } =
             model
 
         defaultHtml =
             H.div [] []
 
-        payingCustomersOverTimeDataChart =
+        payingCustomersOver12MonthsChart =
             lChart
                 >> Chart.title "Customers Over Time"
 
@@ -119,14 +113,14 @@ view model =
     in
         H.div
             [ Svg.Attributes.style "text-align: center" ]
-            [ issuesOverTimeBarChart model
-              --, chartHtml payingCustomersOverTimeDataChart payingCustomersOverTimeData
-              --, chartHtml issuesOverTimeChart issuesOver12Months
+            [ H.h3 [] [ H.text "Issues Over Time" ]
+            , issuesBarChart model
+            , payingCustomersLineGraph model
             ]
 
 
-issuesOverTimeBarChart : Model -> Html Msg
-issuesOverTimeBarChart model =
+issuesBarChart : Model -> Html Msg
+issuesBarChart model =
     let
         { issuesOver12Months, currentDate, windowSize } =
             model
@@ -172,9 +166,15 @@ issuesOverTimeBarChart model =
                 { opts
                     | orientation = Axis.Bottom
                     , tickCount = List.length data
-                    , tickFormat = Just (truncate >> toMonth)
+                    , tickFormat = Just (truncate >> tickString)
                 }
                 xScale
+
+        tickString i =
+            if i == 0 then
+                ""
+            else
+                toMonth i
 
         yAxis : Svg msg
         yAxis =
@@ -205,7 +205,7 @@ issuesOverTimeBarChart model =
                 |> Path.toAttrString
     in
         svg
-            [ width (toString w ++ "px"), height (toString h ++ "px"), Svg.Attributes.style "padding: 8px" ]
+            [ width (toString w ++ "px"), height (toString h ++ "px") ]
             [ g [ transform ("translate(" ++ toString (chartPadding - 1) ++ ", " ++ toString (h - chartPadding) ++ ")") ]
                 [ xAxis ]
             , g [ transform ("translate(" ++ toString (chartPadding - 1) ++ ", " ++ toString chartPadding ++ ")") ]
@@ -218,6 +218,94 @@ issuesOverTimeBarChart model =
             ]
 
 
+payingCustomersLineGraph : Model -> Html Msg
+payingCustomersLineGraph model =
+    let
+        { payingCustomersOver12Months, currentDate, windowSize } =
+            model
+
+        ( w, h ) =
+            chartDimensions (toFloat windowSize.width)
+
+        dataTransform i x =
+            ( toFloat i, x )
+
+        data =
+            (\payingCustomers currentDate -> List.indexedMap dataTransform payingCustomers)
+                <$> (payingCustomersOver12Months |> R.mapError toString)
+                <*> (currentDate |> Result.fromMaybe "" >> R.fromResult)
+                |> R.withDefault []
+
+        xScale : ContinuousScale
+        xScale =
+            Scale.linear
+                ( 0, (toFloat << List.length) data )
+                ( 0, w - 2 * chartPadding )
+
+        maxY =
+            List.map Tuple.second data
+                |> List.maximum
+                |> Maybe.withDefault 10
+                |> (*) 1.1
+
+        yScale : ContinuousScale
+        yScale =
+            Scale.linear ( 0, maxY ) ( h - 2 * chartPadding, 0 )
+
+        opts : Axis.Options a
+        opts =
+            Axis.defaultOptions
+
+        xAxis : Svg msg
+        xAxis =
+            Axis.axis
+                { opts
+                    | orientation = Axis.Bottom
+                    , tickCount = List.length data
+                    , tickFormat = Just (truncate >> (+) 1 >> toMonth)
+                }
+                xScale
+
+        tickString i =
+            if i == 0 then
+                ""
+            else
+                toMonth i
+
+        yAxis : Svg msg
+        yAxis =
+            Axis.axis { opts | orientation = Axis.Left } yScale
+
+        areaGenerator : ( Float, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
+        areaGenerator ( x, y ) =
+            Just ( ( Scale.convert xScale x, Tuple.first (Scale.rangeExtent yScale) ), ( Scale.convert xScale x, Scale.convert yScale y ) )
+
+        lineGenerator : ( Float, Float ) -> Maybe ( Float, Float )
+        lineGenerator ( x, y ) =
+            Just ( Scale.convert xScale x, Scale.convert yScale y )
+
+        area : String
+        area =
+            List.map areaGenerator data
+                |> Shape.area Shape.monotoneInXCurve
+
+        line : String
+        line =
+            List.map lineGenerator data
+                |> Shape.line Shape.monotoneInXCurve
+    in
+        svg [ width (toString w ++ "px"), height (toString h ++ "px") ]
+            [ g [ transform ("translate(" ++ toString (chartPadding - 1) ++ ", " ++ toString (h - chartPadding) ++ ")") ]
+                [ xAxis ]
+            , g [ transform ("translate(" ++ toString (chartPadding - 1) ++ ", " ++ toString chartPadding ++ ")") ]
+                [ yAxis ]
+            , g [ transform ("translate(" ++ toString chartPadding ++ ", " ++ toString chartPadding ++ ")"), class "series" ]
+                [ Svg.path [ d area, stroke "none", strokeWidth "3px", fill "rgba(255, 0, 0, 0.54)" ] []
+                , Svg.path [ d line, stroke "red", strokeWidth "3px", fill "none" ] []
+                ]
+            ]
+
+
 maxChartWidth : Float
 maxChartWidth =
     600
@@ -225,7 +313,7 @@ maxChartWidth =
 
 chartPadding : Float
 chartPadding =
-    30
+    38
 
 
 chartDimensions : Float -> ( Float, Float )
@@ -242,9 +330,7 @@ chartDimensions windowWidth =
 
 toMonth : Int -> String
 toMonth i =
-    if i == 0 then
-        ""
-    else if i % 12 == 0 then
+    if i % 12 == 0 then
         "Dec"
     else if i % 12 == 1 then
         "Jan"
