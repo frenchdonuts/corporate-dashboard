@@ -110,6 +110,7 @@ view remoteDataIssues model =
                 [ Grid.size Grid.Desktop 8
                 , Grid.size Grid.Tablet 8
                 , Typo.display1
+                , O.css "margin-top" "32px"
                 , O.css "margin-bottom" "32px"
                 ]
                 [ H.text ("Number of current issues: " ++ toString currentIssuesCount) ]
