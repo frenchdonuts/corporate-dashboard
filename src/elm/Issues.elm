@@ -310,7 +310,10 @@ issueRow columns issue =
                     toTd (toString open)
 
                 ClosedTimestamp ->
-                    toTd (dateTimeToString <| T.fromTimestamp closedTimestamp)
+                    if closedTimestamp == -1 then
+                        toTd "N/A"
+                    else
+                        toTd (dateTimeToString <| T.fromTimestamp closedTimestamp)
 
                 EmployeeName ->
                     toTd employeeName
