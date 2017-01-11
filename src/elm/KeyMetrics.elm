@@ -12,30 +12,38 @@ import Svg.Attributes exposing (..)
 import Http
 import Json.Decode as J
 import RemoteData as R
+import RemoteData.Infix exposing (..)
+import Task
 import Date exposing (Date)
+import Misc
 
 
 type alias Model =
     { payingCustomersOverTimeData : R.RemoteData Http.Error (List ( Float, String ))
-    , issuesOverTimeData : R.RemoteData Http.Error (List ( Float, String ))
+    , issuesOver12Months : R.RemoteData Http.Error (List Float)
+    , currentDate : Maybe Date.Date
     }
 
 
 type Msg
     = NoOp
     | DataFetched (R.RemoteData Http.Error ( List Float, List Float ))
+    | CurrentTimeFetched Date.Date
 
 
 init : ( Model, Cmd Msg )
 init =
     { payingCustomersOverTimeData = R.NotAsked
-    , issuesOverTimeData = R.NotAsked
+    , issuesOver12Months = R.NotAsked
+    , currentDate = Nothing
     }
-        ! [ fetchIssuesOverTimeData ]
+        ! [ fetchissuesOver12Months
+          , Task.perform CurrentTimeFetched Date.now
+          ]
 
 
-fetchIssuesOverTimeData : Cmd Msg
-fetchIssuesOverTimeData =
+fetchissuesOver12Months : Cmd Msg
+fetchissuesOver12Months =
     let
         decoder =
             J.map2 (,)
@@ -57,16 +65,22 @@ update msg model =
                 toChartData =
                     List.indexedMap (\i f -> ( f, toMonth i ))
 
+                toChartData_ =
+                    List.indexedMap (\i f -> ( Misc.toMonth i, f ))
+
                 payingCustomersOverTime =
                     R.map (Tuple.first >> toChartData) remoteData
 
                 issuesOverTime =
-                    R.map (Tuple.second >> toChartData) remoteData
+                    R.map Tuple.second remoteData
             in
                 { model
                     | payingCustomersOverTimeData = payingCustomersOverTime
-                    , issuesOverTimeData = issuesOverTime
+                    , issuesOver12Months = issuesOverTime
                 }
+
+        CurrentTimeFetched date ->
+            { model | currentDate = Just date }
 
 
 toMonth : Int -> String
@@ -100,7 +114,7 @@ toMonth i =
 view : Model -> Html Msg
 view model =
     let
-        { payingCustomersOverTimeData, issuesOverTimeData } =
+        { payingCustomersOverTimeData, issuesOver12Months } =
             model
 
         defaultHtml =
@@ -122,7 +136,7 @@ view model =
             []
             [ issuesOverTimeBarChart model
               --, chartHtml payingCustomersOverTimeDataChart payingCustomersOverTimeData
-              --, chartHtml issuesOverTimeChart issuesOverTimeData
+              --, chartHtml issuesOverTimeChart issuesOver12Months
             ]
 
 
@@ -144,12 +158,25 @@ padding =
 issuesOverTimeBarChart : Model -> Html Msg
 issuesOverTimeBarChart model =
     let
-        { issuesOverTimeData } =
+        { issuesOver12Months, currentDate } =
             model
+
+        dataTransform currentDate listLength i issuesThisMonth =
+            ((Date.toTime currentDate) - (11 - toFloat i) * Misc.msInMonth)
+                |> Date.fromTime
+                |> flip (,) issuesThisMonth
+
+        data =
+            (\issues currentDate -> List.indexedMap (dataTransform currentDate (List.length issues)) issues)
+                <$> (issuesOver12Months |> R.mapError toString)
+                <*> (currentDate |> Result.fromMaybe "" >> R.fromResult)
+                |> R.withDefault []
 
         xScale : ContinuousTimeScale
         xScale =
-            Scale.time ( Date.fromTime 1448928000000, Date.fromTime 1456790400000 ) ( 0, w - 2 * padding )
+            Scale.time
+                ( List.head data |> Maybe.map Tuple.first |> Maybe.withDefault (Date.fromTime 1448928000000), List.reverse data |> List.head |> Maybe.map Tuple.first |> Maybe.withDefault (Date.fromTime 1456790400000) )
+                ( 0, w - 2 * padding )
 
         yScale : ContinuousScale
         yScale =

@@ -1,6 +1,14 @@
-Bar Charts
-  Shape.bar
-  Shape.barChart
+Bar Chart
+  Display our actual data
+    Get current Date
+    Create a list of Dates going back every month for 12 months
+    Pass in our list of Dates
+  Make our chart responsive
+    Install elm-lang/window
+    Subscribe to resizes
+    Use the new window width to calculate the new width of the chart.
+    Make the height of the chart some fraction of its width (aka use aspect ratios)
+
 Key Metrics
   Ahhh...now we come to a decision. We need the number of open issues displayed on this page.
   But we have our List Issue in our Issue page's model! What to do?
