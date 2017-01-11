@@ -16,7 +16,7 @@ Install Elm's dependencies:
 elm package install
 ```
 
-### Serve locally:
+### Serve locally(dev mode):
 ```
 npm start
 ```
