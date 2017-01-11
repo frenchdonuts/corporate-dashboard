@@ -113,7 +113,7 @@ subscriptions model =
     Sub.batch
         [ L.subs Mdl model.mdl
         , Sub.map KeyMetricsMsg K.subscriptions
-        , issues
+        , issues NewIssue
         ]
 
 

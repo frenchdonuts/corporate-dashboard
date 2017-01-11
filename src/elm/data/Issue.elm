@@ -1,6 +1,6 @@
 module Data.Issue exposing (..)
 
-import CSVParser exposing (parseDateTime, parseString)
+import CSVParser exposing (parseTime, parseString)
 import Time.DateTime as T
 import Combine as C exposing ((<$>), (<|>), (<*), (<*>))
 import Combine.Char as Ch
@@ -9,12 +9,12 @@ import RemoteData as R
 
 
 type alias Issue =
-    { submissionTimestamp : T.DateTime
+    { submissionTimestamp : Float
     , customerName : String
     , customerEmailAddress : String
     , description : String
     , open : Bool
-    , closedTimestamp : T.DateTime
+    , closedTimestamp : Float
     , employeeName : String
     }
 
@@ -54,9 +54,9 @@ parseIssue =
         <*> parseEmployeeName
 
 
-parseSubmissionTimestamp : C.Parser s T.DateTime
+parseSubmissionTimestamp : C.Parser s Float
 parseSubmissionTimestamp =
-    parseDateTime
+    parseTime
 
 
 parseCustomerName : C.Parser s String
@@ -94,9 +94,9 @@ parseOpen =
         parseBoolean <* (C.string ",")
 
 
-parseClosedTimestamp : C.Parser s T.DateTime
+parseClosedTimestamp : C.Parser s Float
 parseClosedTimestamp =
-    parseDateTime
+    parseTime
 
 
 parseEmployeeName : C.Parser s String

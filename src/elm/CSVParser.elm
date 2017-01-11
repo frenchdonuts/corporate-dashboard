@@ -6,54 +6,13 @@ import Combine.Char as Ch
 import Time.DateTime as T
 
 
-parseSubmissionTimestamp : C.Parser s T.DateTime
-parseSubmissionTimestamp =
-    parseDateTime
-
-
-parseCustomerName : C.Parser s String
-parseCustomerName =
-    parseString
-
-
-parseCustomerEmailAddress : C.Parser s String
-parseCustomerEmailAddress =
-    parseString
-
-
-parseDescription : C.Parser s String
-parseDescription =
-    parseString
-
-
-parseOpen : C.Parser s Bool
-parseOpen =
+parseTime : C.Parser s Float
+parseTime =
     let
-        match string =
-            case string of
-                "true" ->
-                    True
-
-                "false" ->
-                    False
-
-                _ ->
-                    True
-
-        parseBoolean =
-            match <$> (C.string "true" <|> C.string "false")
+        toDateTime =
+            Result.withDefault 0 << String.toFloat
     in
-        parseBoolean <* (C.string ",")
-
-
-parseClosedTimestamp : C.Parser s T.DateTime
-parseClosedTimestamp =
-    parseDateTime
-
-
-parseEmployeeName : C.Parser s String
-parseEmployeeName =
-    String.fromList <$> C.manyTill Ch.anyChar (Ch.newline)
+        toDateTime <$> C.while ((/=) ',') <* (C.string ",")
 
 
 parseDateTime : C.Parser s T.DateTime

@@ -82,7 +82,7 @@ sorter sortKey sortOrder =
     in
         case sortKey of
             SubmissionTimestamp ->
-                comparisonFn (\i1 i2 -> T.compare i1.submissionTimestamp i2.submissionTimestamp)
+                comparisonFn (\i1 i2 -> compare i1.submissionTimestamp i2.submissionTimestamp)
 
             CustomerName ->
                 comparisonFn (\i1 i2 -> compare i1.customerName i2.customerName)
@@ -97,7 +97,7 @@ sorter sortKey sortOrder =
                 comparisonFn (\i1 i2 -> compareBool i1.open i2.open)
 
             ClosedTimestamp ->
-                comparisonFn (\i1 i2 -> T.compare i1.closedTimestamp i2.closedTimestamp)
+                comparisonFn (\i1 i2 -> compare i1.closedTimestamp i2.closedTimestamp)
 
             EmployeeName ->
                 comparisonFn (\i1 i2 -> compare i1.employeeName i2.employeeName)
@@ -295,7 +295,7 @@ issueRow columns issue =
         columnData key =
             case key of
                 SubmissionTimestamp ->
-                    toTd (dateTimeToString submissionTimestamp)
+                    toTd (dateTimeToString <| T.fromTimestamp submissionTimestamp)
 
                 CustomerName ->
                     toTd customerName
@@ -310,7 +310,7 @@ issueRow columns issue =
                     toTd (toString open)
 
                 ClosedTimestamp ->
-                    toTd (dateTimeToString closedTimestamp)
+                    toTd (dateTimeToString <| T.fromTimestamp closedTimestamp)
 
                 EmployeeName ->
                     toTd employeeName
