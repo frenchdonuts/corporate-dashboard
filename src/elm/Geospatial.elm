@@ -165,9 +165,13 @@ googleMap model =
 
         toMarker ( city, location ) =
             googleMapMarker city location
+
+        apiKey =
+            "AIzaSyCsjmyyLuHgaDD9YRneYd0Qh8ww6lvqtas"
     in
         H.node "google-map"
-            [ attribute "fit-to-markers" ""
+            [ attribute "key" apiKey
+            , attribute "fit-to-markers" ""
             , attribute "disable-default-ui" ""
             , attribute "disable-zoom" ""
             , attribute "zoom" zoom
