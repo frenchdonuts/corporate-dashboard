@@ -61,9 +61,18 @@ init location =
 
         ( keyMetricsInitModel, keyMetricsInitCmd ) =
             K.init
+
+        homePage =
+            parsePath route location
+
+        fetchIssuesCmd =
+            if homePage == Just KeyMetrics || homePage == Just Issues then
+                Cmd.map IssuesDataFetched DI.getIssuesCmd
+            else
+                Cmd.none
     in
         { history =
-            [ parsePath route location ]
+            [ homePage ]
         , mdl = Material.model
         , geospatial = geospatialInitModel
         , keyMetrics = keyMetricsInitModel
@@ -73,6 +82,7 @@ init location =
             ! [ L.sub0 Mdl
               , Cmd.map GeospatialMsg geospatialInitCmd
               , Cmd.map KeyMetricsMsg keyMetricsInitCmd
+              , fetchIssuesCmd
               ]
 
 
@@ -146,7 +156,7 @@ update msg model =
         UrlChange navLocation ->
             let
                 newPage =
-                    parsePath route navLocation
+                    parsePath route <| Debug.log "Navigation detected" navLocation
 
                 fetchIssuesCmd =
                     if (newPage == Just KeyMetrics || newPage == Just Issues) && (model.issues |> R.isNotAsked) then

@@ -6,7 +6,7 @@ require('./styles/main.scss');
 var Elm = require('../elm/Main');
 var app = Elm.Main.fullscreen();
 
-window.setInterval(createAndSendIssue, 30 * 1000);
+window.setInterval(createAndSendIssue, 3 * 1000);
 
 function createAndSendIssue() {
     //
