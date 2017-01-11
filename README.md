@@ -27,3 +27,4 @@ npm start
 ```
 npm run build
 ```
+* Run http-server in dist/
