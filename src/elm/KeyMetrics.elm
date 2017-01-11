@@ -16,12 +16,14 @@ import RemoteData.Infix exposing (..)
 import Task
 import Date exposing (Date)
 import Misc
+import Window
 
 
 type alias Model =
     { payingCustomersOverTimeData : R.RemoteData Http.Error (List ( Float, String ))
     , issuesOver12Months : R.RemoteData Http.Error (List Float)
     , currentDate : Maybe Date.Date
+    , windowSize : Window.Size
     }
 
 
@@ -29,6 +31,7 @@ type Msg
     = NoOp
     | DataFetched (R.RemoteData Http.Error ( List Float, List Float ))
     | CurrentTimeFetched Date.Date
+    | OnWindowResize Window.Size
 
 
 init : ( Model, Cmd Msg )
@@ -36,10 +39,17 @@ init =
     { payingCustomersOverTimeData = R.NotAsked
     , issuesOver12Months = R.NotAsked
     , currentDate = Nothing
+    , windowSize = { width = 0, height = 0 }
     }
         ! [ fetchissuesOver12Months
           , Task.perform CurrentTimeFetched Date.now
+          , Task.perform OnWindowResize Window.size
           ]
+
+
+subscriptions : Sub Msg
+subscriptions =
+    Window.resizes OnWindowResize
 
 
 fetchissuesOver12Months : Cmd Msg
@@ -81,6 +91,9 @@ update msg model =
 
         CurrentTimeFetched date ->
             { model | currentDate = Just date }
+
+        OnWindowResize size ->
+            { model | windowSize = size }
 
 
 toMonth : Int -> String
@@ -142,26 +155,14 @@ view model =
             ]
 
 
-w : Float
-w =
-    500
-
-
-h : Float
-h =
-    0.75 * w
-
-
-padding : Float
-padding =
-    30
-
-
 issuesOverTimeBarChart : Model -> Html Msg
 issuesOverTimeBarChart model =
     let
-        { issuesOver12Months, currentDate } =
+        { issuesOver12Months, currentDate, windowSize } =
             model
+
+        ( w, h ) =
+            chartDimensions (toFloat windowSize.width)
 
         dataTransform currentDate listLength i issuesThisMonth =
             ((Date.toTime currentDate) - (11 - toFloat i) * Misc.msInMonth)
@@ -179,7 +180,7 @@ issuesOverTimeBarChart model =
         xScale =
             Scale.linear
                 ( 0, (toFloat << List.length) data )
-                ( 0, w - 2 * padding )
+                ( 0, w - 2 * chartPadding )
 
         maxY =
             List.map Tuple.second data
@@ -189,7 +190,7 @@ issuesOverTimeBarChart model =
 
         yScale : ContinuousScale
         yScale =
-            Scale.linear ( 0, maxY ) ( h - 2 * padding, 0 )
+            Scale.linear ( 0, maxY ) ( h - 2 * chartPadding, 0 )
 
         opts : Axis.Options a
         opts =
@@ -235,11 +236,11 @@ issuesOverTimeBarChart model =
     in
         svg
             [ width (toString w ++ "px"), height (toString h ++ "px"), Svg.Attributes.style "padding: 8px" ]
-            [ g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString (h - padding) ++ ")") ]
+            [ g [ transform ("translate(" ++ toString (chartPadding - 1) ++ ", " ++ toString (h - chartPadding) ++ ")") ]
                 [ xAxis ]
-            , g [ transform ("translate(" ++ toString (padding - 1) ++ ", " ++ toString padding ++ ")") ]
+            , g [ transform ("translate(" ++ toString (chartPadding - 1) ++ ", " ++ toString chartPadding ++ ")") ]
                 [ yAxis ]
-            , g [ transform ("translate(" ++ toString padding ++ ", " ++ toString padding ++ ")") ]
+            , g [ transform ("translate(" ++ toString chartPadding ++ ", " ++ toString chartPadding ++ ")") ]
                 [ Svg.path
                     [ d bars, stroke "none", strokeWidth "3px", fill "rgba(255, 0, 0, 0.54)" ]
                     []
@@ -247,9 +248,23 @@ issuesOverTimeBarChart model =
             ]
 
 
-data =
-    [ ( Date.fromTime 1448928000000, 2 )
-    , ( Date.fromTime 1451606400000, 2 )
-    , ( Date.fromTime 1454284800000, 1 )
-    , ( Date.fromTime 1456790400000, 1 )
-    ]
+maxChartWidth : Float
+maxChartWidth =
+    600
+
+
+chartPadding : Float
+chartPadding =
+    30
+
+
+chartDimensions : Float -> ( Float, Float )
+chartDimensions windowWidth =
+    let
+        w =
+            Basics.min windowWidth maxChartWidth
+
+        h =
+            0.75 * w
+    in
+        ( w, h )

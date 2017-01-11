@@ -1,9 +1,5 @@
 Bar Chart
-  Make our chart responsive
-    Install elm-lang/window
-    Subscribe to resizes
-    Use the new window width to calculate the new width of the chart.
-    Make the height of the chart some fraction of its width (aka use aspect ratios)
+  Make the last month on the x-axis the actual current month
 
 Key Metrics
   Ahhh...now we come to a decision. We need the number of open issues displayed on this page.

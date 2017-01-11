@@ -111,6 +111,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ L.subs Mdl model.mdl
+        , Sub.map KeyMetricsMsg K.subscriptions
         ]
 
 
@@ -203,7 +204,7 @@ header =
     [ L.row
         [ O.css "transition" "height 333ms ease-in-out 0s"
         ]
-        [ L.title [] [ H.text "Massive Corp. Inc." ]
+        [ L.title [] [ H.text "Issue Solver Inc." ]
         , L.spacer
         , L.navigation []
             [ L.link
