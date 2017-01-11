@@ -13,6 +13,8 @@ import Material.Options as O
 import Http
 import RemoteData as R
 import Misc exposing ((+|+))
+import Dom.Scroll exposing (y)
+import Dom.LowLevel exposing (onDocument)
 
 
 type alias Model =
@@ -120,6 +122,10 @@ init =
     }
 
 
+
+--! [ onDocument "scroll" ]
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -197,6 +203,7 @@ view remoteDataIssues model =
                         ]
                         [ Table.thead
                             [ O.css "z-index" "3"
+                              --, O.css "transform" "translate(0,"++scrollTop++"px)"
                             ]
                             (List.map (headerColumn model) columns)
                         , Table.tbody
