@@ -184,7 +184,7 @@ view model =
                     H.map GeospatialMsg (G.view geospatial)
 
                 KeyMetrics ->
-                    H.map KeyMetricsMsg (K.view keyMetrics)
+                    H.map KeyMetricsMsg (K.view issues keyMetrics)
 
                 Issues ->
                     H.map IssuesMsg (I.view issues issuesPage)

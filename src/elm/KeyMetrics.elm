@@ -17,6 +17,10 @@ import Task
 import Date exposing (Date)
 import Misc
 import Window
+import Material.Grid as Grid
+import Material.Typography as Typo
+import Material.Options as O
+import Data.Issue exposing (Issue)
 
 
 type alias Model =
@@ -90,37 +94,51 @@ update msg model =
             { model | windowSize = size }
 
 
-view : Model -> Html Msg
-view model =
+view : R.RemoteData String (List Issue) -> Model -> Html Msg
+view remoteDataIssues model =
     let
         { payingCustomersOver12Months, issuesOver12Months } =
             model
 
-        defaultHtml =
-            H.div [] []
-
-        payingCustomersOver12MonthsChart =
-            lChart
-                >> Chart.title "Customers Over Time"
-
-        issuesOverTimeChart =
-            hBar
-                >> Chart.title "Issues Over Time"
-
-        chartHtml chart data =
-            R.map (chart >> toHtml) data
-                |> R.withDefault defaultHtml
+        currentIssuesCount =
+            R.map List.length remoteDataIssues
+                |> R.withDefault 0
     in
-        H.div
-            [ SA.style "text-align: center" ]
-            [ H.div []
-                [ H.h3 [ SA.style "margin-bottom: -16px" ] [ H.text "Issues Over Time" ]
-                , issuesBarChart model
+        Grid.grid
+            []
+            [ Grid.cell
+                [ Grid.size Grid.Desktop 8
+                , Grid.size Grid.Tablet 8
+                , Typo.display1
+                , O.css "margin-bottom" "32px"
                 ]
-            , H.div []
-                [ H.h3 [ SA.style "margin-bottom: -16px" ] [ H.text "Paying Customers Over Time" ]
-                , payingCustomersLineGraph model
+                [ H.text ("Number of current issues: " ++ toString currentIssuesCount) ]
+            , Grid.cell
+                [ Grid.size Grid.Desktop 8
+                , Grid.size Grid.Tablet 8
+                , Typo.display1
+                , O.css "margin-bottom" "-32px"
                 ]
+                [ H.text "Issues Over Time" ]
+            , Grid.cell
+                [ Grid.size Grid.Desktop 8
+                , Grid.offset Grid.Desktop 2
+                , Grid.size Grid.Tablet 8
+                ]
+                [ issuesBarChart model ]
+            , Grid.cell
+                [ Grid.size Grid.Desktop 8
+                , Grid.size Grid.Tablet 8
+                , Typo.display1
+                , O.css "margin-bottom" "-32px"
+                ]
+                [ H.text "Paying Customers Over Time" ]
+            , Grid.cell
+                [ Grid.size Grid.Desktop 8
+                , Grid.offset Grid.Desktop 2
+                , Grid.size Grid.Tablet 8
+                ]
+                [ payingCustomersLineGraph model ]
             ]
 
 
