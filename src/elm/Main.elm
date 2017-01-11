@@ -156,7 +156,7 @@ update msg model =
         UrlChange navLocation ->
             let
                 newPage =
-                    parsePath route <| Debug.log "Navigation detected" navLocation
+                    parsePath route navLocation
 
                 fetchIssuesCmd =
                     if (newPage == Just KeyMetrics || newPage == Just Issues) && (model.issues |> R.isNotAsked) then
@@ -198,28 +198,40 @@ view model =
     in
         L.render Mdl
             mdl
-            [ L.fixedDrawer ]
-            { header = header
+            [ L.fixedHeader ]
+            { header = header currentPage
             , drawer = drawer
             , tabs = ( [], [] )
             , main = [ mainView ]
             }
 
 
-header : List (Html Msg)
-header =
-    [ L.row
-        [ O.css "transition" "height 333ms ease-in-out 0s"
-        ]
-        [ L.title [] [ H.text "Issue Solver Inc." ]
-        , L.spacer
-        , L.navigation []
-            [ L.link
-                [ L.href "https://github.com/frenchdonuts/corporate-dashboard" ]
-                [ H.span [] [ H.text "github" ] ]
+header : Page -> List (Html Msg)
+header currentPage =
+    let
+        pageToString page =
+            case page of
+                Geospatial ->
+                    "Geospatial Data"
+
+                KeyMetrics ->
+                    "Key Metrics"
+
+                Issues ->
+                    "Issues"
+    in
+        [ L.row
+            [ O.css "transition" "height 333ms ease-in-out 0s"
+            ]
+            [ L.title [] [ H.text <| pageToString currentPage ]
+            , L.spacer
+            , L.navigation []
+                [ L.link
+                    [ L.href "https://github.com/frenchdonuts/corporate-dashboard" ]
+                    [ H.span [] [ H.text "github" ] ]
+                ]
             ]
         ]
-    ]
 
 
 drawer : List (Html Msg)
