@@ -60,7 +60,7 @@ columnToString column =
 
 init : ( Model, Cmd Msg )
 init =
-    Model Nothing D.empty Nothing City True ! [ Http.send GeospatialData fetchGeospatialData ]
+    Model Nothing D.empty Nothing EmployeeCount True ! [ Http.send GeospatialData fetchGeospatialData ]
 
 
 fetchGeospatialData : Http.Request (D.Dict String Location)
