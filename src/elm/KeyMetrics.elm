@@ -96,36 +96,6 @@ update msg model =
             { model | windowSize = size }
 
 
-toMonth : Int -> String
-toMonth i =
-    if i == 0 then
-        ""
-    else if i % 12 == 0 then
-        "Dec"
-    else if i % 12 == 1 then
-        "Jan"
-    else if i % 12 == 2 then
-        "Feb"
-    else if i % 12 == 3 then
-        "Mar"
-    else if i % 12 == 4 then
-        "Apr"
-    else if i % 12 == 5 then
-        "May"
-    else if i % 12 == 6 then
-        "Jun"
-    else if i % 12 == 7 then
-        "Jul"
-    else if i % 12 == 8 then
-        "Aug"
-    else if i % 12 == 9 then
-        "Sep"
-    else if i % 12 == 10 then
-        "Oct"
-    else
-        "Nov"
-
-
 view : Model -> Html Msg
 view model =
     let
@@ -268,3 +238,33 @@ chartDimensions windowWidth =
             0.75 * w
     in
         ( w, h )
+
+
+toMonth : Int -> String
+toMonth i =
+    if i == 0 then
+        ""
+    else if i % 12 == 0 then
+        "Dec"
+    else if i % 12 == 1 then
+        "Jan"
+    else if i % 12 == 2 then
+        "Feb"
+    else if i % 12 == 3 then
+        "Mar"
+    else if i % 12 == 4 then
+        "Apr"
+    else if i % 12 == 5 then
+        "May"
+    else if i % 12 == 6 then
+        "Jun"
+    else if i % 12 == 7 then
+        "Jul"
+    else if i % 12 == 8 then
+        "Aug"
+    else if i % 12 == 9 then
+        "Sep"
+    else if i % 12 == 10 then
+        "Oct"
+    else
+        "Nov"
