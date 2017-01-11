@@ -1,10 +1,10 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Home as H
 import Geospatial as G
 import KeyMetrics as K
 import Issues as I
-import Data.Issue as DI
+import Data.Issue as DI exposing (Issue)
 import Html as H exposing (Html)
 import Material
 import Material.Layout as L
@@ -34,7 +34,7 @@ type alias Model =
     , geospatial : G.Model
     , keyMetrics : K.Model
     , issuesPage : I.Model
-    , issues : R.RemoteData String (List DI.Issue)
+    , issues : R.RemoteData String (List Issue)
     }
 
 
@@ -53,7 +53,8 @@ type Msg
     | GeospatialMsg G.Msg
     | KeyMetricsMsg K.Msg
     | IssuesMsg I.Msg
-    | IssuesDataFetched (R.RemoteData String (List DI.Issue))
+    | IssuesDataFetched (R.RemoteData String (List Issue))
+    | NewIssue Issue
 
 
 init : Navigation.Location -> ( Model, Cmd Msg )
@@ -112,7 +113,11 @@ subscriptions model =
     Sub.batch
         [ L.subs Mdl model.mdl
         , Sub.map KeyMetricsMsg K.subscriptions
+        , issues
         ]
+
+
+port issues : (Issue -> msg) -> Sub msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -139,6 +144,9 @@ update msg model =
 
         IssuesDataFetched remoteData ->
             { model | issues = remoteData } ! []
+
+        NewIssue issue ->
+            { model | issues = R.map (\issues -> issue :: issues) model.issues } ! []
 
         NewUrl url ->
             ( model, Navigation.newUrl url )
