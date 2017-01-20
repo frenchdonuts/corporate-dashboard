@@ -9,7 +9,7 @@ import Material
 import Material.Layout as L
 import Material.Options as O
 import Navigation
-import UrlParser exposing (Parser, top, s, oneOf, map, parsePath)
+import UrlParser exposing (Parser, top, s, oneOf, map, parsePath, (</>))
 import RemoteData as R
 
 
@@ -93,6 +93,12 @@ route =
         , map Geospatial (s "geospatial")
         , map KeyMetrics (s "keymetrics")
         , map Issues (s "issues")
+          -- Match Github Pages style routes:
+          -- https://frenchdonuts.github.io/corporate-dashboard/
+        , map Issues (s "corporate-dashboard" </> top)
+        , map Geospatial (s "corporate-dashboard" </> s "geospatial")
+        , map KeyMetrics (s "corporate-dashboard" </> s "keymetrics")
+        , map Issues (s "corporate-dashboard" </> s "issues")
         ]
 
 
