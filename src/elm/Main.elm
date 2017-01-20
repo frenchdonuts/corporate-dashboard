@@ -89,7 +89,8 @@ init location =
 route : Parser (Page -> a) a
 route =
     oneOf
-        [ map Geospatial (s "geospatial")
+        [ map Issues top
+        , map Geospatial (s "geospatial")
         , map KeyMetrics (s "keymetrics")
         , map Issues (s "issues")
         ]
@@ -180,10 +181,10 @@ view model =
         currentPage =
             case history of
                 maybePage :: history ->
-                    Maybe.withDefault Geospatial maybePage
+                    Maybe.withDefault Issues maybePage
 
                 [] ->
-                    Geospatial
+                    Issues
 
         mainView =
             case currentPage of

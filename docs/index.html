@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charSet="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Massive Corporation Inc.</title>
+    <meta name="description" content="Udacity Sr. Web Developer Nanodegree Project 4"/>
+    <meta name="author" content="Jonathan Tan"/>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/icon?family=Material+Icons'>
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.indigo-orange.min.css" />
+    <script>
+        function openElmDebug() {
+            triggerEventOnPage(".elm-mini-controls-button", "click")
+        }
+
+        function triggerEventOnPage(selector, eventName, memo) {
+                var event;
+                var element = document.querySelector(selector);
+
+                event = document.createEvent("Event");
+                event.initEvent(eventName, true, true);
+                event.memo = memo || { };
+
+                element.dispatchEvent(event);
+        }
+    </script>
+  <link href="./181b0fbaa02bd4c064e3.css" rel="stylesheet"></head>
+  <body>
+  <script type="text/javascript" src="181b0fbaa02bd4c064e3.js"></script></body>
+</html>
