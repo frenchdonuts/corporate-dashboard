@@ -31,7 +31,7 @@ getIssuesCmd =
             R.mapError toString remoteData
                 |> R.andThen (toIssues >> R.fromResult)
     in
-        Http.getString "http://localhost:8080/static/issues.csv"
+        Http.getString "/static/issues.csv"
             |> Http.toTask
             |> R.asCmd
             |> Cmd.map transform

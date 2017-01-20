@@ -65,7 +65,7 @@ init =
 
 fetchGeospatialData : Http.Request (D.Dict String Location)
 fetchGeospatialData =
-    Http.get "http://localhost:8080/static/geospatial.json" geospatialDecoder
+    Http.get "/static/geospatial.json" geospatialDecoder
 
 
 geospatialDecoder : J.Decoder (D.Dict String Location)

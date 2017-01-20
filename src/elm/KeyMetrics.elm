@@ -64,7 +64,7 @@ fetchData =
                 (J.field "payingCustomersOverTimeData" (J.list J.float))
                 (J.field "issuesOverTimeData" (J.list J.float))
     in
-        Http.get "http://localhost:8080/static/key_metrics.json" decoder
+        Http.get "/static/key_metrics.json" decoder
             |> Http.send (R.fromResult >> DataFetched)
 
 
