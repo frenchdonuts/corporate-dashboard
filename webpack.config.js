@@ -108,14 +108,14 @@ if (TARGET_ENV === 'production') {
 
         plugins: [
             new CopyWebpackPlugin([{
-                from: 'src/static/geospatial.json',
-                to: 'static/geospatial.json'
+                from: 'src/_data/geospatial.json',
+                to: '_data/geospatial.json'
             }, {
-                from: 'src/static/key_metrics.json',
-                to: 'static/key_metrics.json',
+                from: 'src/_data/key_metrics.json',
+                to: '_data/key_metrics.json',
             }, {
-                from: 'src/static/issues.csv',
-                to: 'static/issues.csv'
+                from: 'src/_data/issues.csv',
+                to: '_data/issues.csv'
             }]),
 
             new webpack.optimize.OccurenceOrderPlugin(),
